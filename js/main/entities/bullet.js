@@ -1,9 +1,9 @@
 'use strict';
-import { canvas, ctx } from '../canvas/canvas.js';
+import { canvas, ctx } from '../../canvas/canvas.js';
 import { players } from './player.js';
 import { enemies } from './enemy.js';
 import { rocks } from './rock.js';
-import { mathHelper } from '../helpers/mathHelper.js';
+import { mathHelper } from '../../helpers/mathHelper.js';
 
 export class Bullet {
     constructor(

@@ -1,8 +1,8 @@
 'use strict';
-import { mathHelper } from '../helpers/mathHelper.js';
-import { game } from './game.js';
-import { canvasData, ctx } from '../canvas/canvas.js';
-import { graphicsHelper } from '../helpers/graphicsHelper.js';
+import { mathHelper } from '../../helpers/mathHelper.js';
+import { game } from '../game.js';
+import { canvasData, ctx } from '../../canvas/canvas.js';
+import { graphicsHelper } from '../../helpers/graphicsHelper.js';
 import { createBullet } from './bullet.js';
 
 class Enemy {

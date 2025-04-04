@@ -1,9 +1,9 @@
 'use strict';
-import { players } from './player.js';
-import { enemies } from './enemy.js';
-import { rocks } from './rock.js';
-import { puddles } from './puddle.js';
-import { bullets } from './bullet.js';
+import { players } from './entities/player.js';
+import { enemies } from './entities/enemy.js';
+import { rocks } from './entities/rock.js';
+import { puddles } from './entities/puddle.js';
+import { bullets } from './entities/bullet.js';
 import { graphicsHelper } from '../helpers/graphicsHelper.js';
 import { mathHelper } from '../helpers/mathHelper.js';
 import { ctx, canvasData } from '../canvas/canvas.js';

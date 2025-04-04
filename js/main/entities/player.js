@@ -1,10 +1,11 @@
 'use strict';
-import { controls } from './controls.js';
-import { canvasData, ctx } from '../canvas/canvas.js';
+import { controls } from '../controls.js';
+import { canvasData, ctx } from '../../canvas/canvas.js';
 import { createBullet } from './bullet.js';
 import { rocks } from './rock.js';
 import { puddles } from './puddle.js';
-import { mathHelper } from '../helpers/mathHelper.js';
+import { enemies } from './enemy.js';
+import { mathHelper } from '../../helpers/mathHelper.js';
 
 class Player {
     constructor(
@@ -407,6 +408,12 @@ class Player {
             { x: this.x + this.width, y: this.y + this.height },
             { x: this.x, y: this.y + this.height }
         ];
+
+        for (let i = 0; i < enemies.length; i++) {
+            if (mathHelper.doTwoPolygonsIntersect(playerVertices, enemies[i].vertices)) {
+                console.log('DAMAGE');
+            };
+        };
 
         for (let i = 0; i < puddles.length; i++) {
             if (mathHelper.doTwoPolygonsIntersect(playerVertices, puddles[i].vertices)) {
