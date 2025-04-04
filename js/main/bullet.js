@@ -27,6 +27,24 @@ export class Bullet {
         if (currentSpeedX < 0 && currentSpeedY > 0) { this.direction = 'south-west' };
         if (currentSpeedX < 0 && currentSpeedY === 0) { this.direction = 'west' };
         if (currentSpeedX < 0 && currentSpeedY < 0) { this.direction = 'north-west' };
+
+        if (this.direction === 'north-east' ||
+            this.direction === 'south-east' ||
+            this.direction === 'south-west' ||
+            this.direction === 'north-west'
+        ) {
+            // Нормализация вектора скорости
+            const length = Math.sqrt(currentSpeedX * currentSpeedX + currentSpeedY * currentSpeedY);
+            const normalizedCurrentSpeedX = currentSpeedX / length;
+            const normalizedCurrentSpeedY = currentSpeedY / length;
+
+            // Ожидаемая скорость пули, среднее между двумя скоростями.
+            const expectedCurrentSpeed = (Math.abs(currentSpeedX) + Math.abs(currentSpeedY)) / 2;
+
+            // Умножаем нормализованный вектор на скорость
+            this.currentSpeedX = normalizedCurrentSpeedX * expectedCurrentSpeed;
+            this.currentSpeedY = normalizedCurrentSpeedY * expectedCurrentSpeed;
+        }
     };
 
     moveX() {

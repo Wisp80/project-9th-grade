@@ -87,8 +87,11 @@ class Enemy {
 
                     this.shotRecently = true;
 
-                    setTimeout(
-                        () => { this.shotRecently = false },
+                    let setTimeoutID = setTimeout(
+                        () => { 
+                            this.shotRecently = false;
+                            clearTimeout(setTimeoutID);
+                        },
                         this.shootDelay
                     );
 
@@ -105,8 +108,11 @@ class Enemy {
 
                     this.shotRecently = true;
 
-                    setTimeout(
-                        () => { this.shotRecently = false },
+                    let setTimeoutID = setTimeout(
+                        () => { 
+                            this.shotRecently = false;
+                            clearTimeout(setTimeoutID);
+                        },
                         this.shootDelay
                     );
 
@@ -123,8 +129,11 @@ class Enemy {
 
                     this.shotRecently = true;
 
-                    setTimeout(
-                        () => { this.shotRecently = false },
+                    let setTimeoutID = setTimeout(
+                        () => { 
+                            this.shotRecently = false;
+                            clearTimeout(setTimeoutID);
+                        },
                         this.shootDelay
                     );
 
@@ -141,8 +150,11 @@ class Enemy {
 
                     this.shotRecently = true;
 
-                    setTimeout(
-                        () => { this.shotRecently = false },
+                    let setTimeoutID = setTimeout(
+                        () => { 
+                            this.shotRecently = false;
+                            clearTimeout(setTimeoutID);
+                        },
                         this.shootDelay
                     );
 
@@ -159,8 +171,11 @@ class Enemy {
 
                     this.shotRecently = true;
 
-                    setTimeout(
-                        () => { this.shotRecently = false },
+                    let setTimeoutID = setTimeout(
+                        () => { 
+                            this.shotRecently = false;
+                            clearTimeout(setTimeoutID);
+                        },
                         this.shootDelay
                     );
 
@@ -177,8 +192,11 @@ class Enemy {
 
                     this.shotRecently = true;
 
-                    setTimeout(
-                        () => { this.shotRecently = false },
+                    let setTimeoutID = setTimeout(
+                        () => { 
+                            this.shotRecently = false;
+                            clearTimeout(setTimeoutID);
+                        },
                         this.shootDelay
                     );
 
@@ -195,8 +213,11 @@ class Enemy {
 
                     this.shotRecently = true;
 
-                    setTimeout(
-                        () => { this.shotRecently = false },
+                    let setTimeoutID = setTimeout(
+                        () => { 
+                            this.shotRecently = false;
+                            clearTimeout(setTimeoutID);
+                        },
                         this.shootDelay
                     );
 
@@ -213,8 +234,11 @@ class Enemy {
 
                     this.shotRecently = true;
 
-                    setTimeout(
-                        () => { this.shotRecently = false },
+                    let setTimeoutID = setTimeout(
+                        () => { 
+                            this.shotRecently = false;
+                            clearTimeout(setTimeoutID);
+                        },
                         this.shootDelay
                     );
 
@@ -274,47 +298,47 @@ addEnemy(
     'enemy', generateEnemyID()
 );
 
-// addEnemy(
-//     300, 200,
-//     200, 150,
-//     6, 100, 50,
-//     20, 20, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
-//     'enemy', generateEnemyID()
-// );
+addEnemy(
+    300, 200,
+    200, 150,
+    6, 100, 50,
+    20, 20, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
+    'enemy', generateEnemyID()
+);
 
-// addEnemy(
-//     600, 300,
-//     150, 200,
-//     6, 50, 100,
-//     20, 20, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
-//     'enemy', generateEnemyID()
-// );
+addEnemy(
+    600, 300,
+    150, 200,
+    6, 50, 100,
+    20, 20, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
+    'enemy', generateEnemyID()
+);
 
-// addEnemy(
-//     900, 600,
-//     200, 150,
-//     6, 100, 50,
-//     20, 20, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
-//     'enemy', generateEnemyID()
-// );
+addEnemy(
+    900, 600,
+    200, 150,
+    6, 100, 50,
+    20, 20, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
+    'enemy', generateEnemyID()
+);
 
-// addEnemy(
-//     1100, 400,
-//     150, 200,
-//     6, 50, 100,
-//     20, 20, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
-//     'enemy', generateEnemyID()
-// );
+addEnemy(
+    1100, 400,
+    150, 200,
+    6, 50, 100,
+    20, 20, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
+    'enemy', generateEnemyID()
+);
 
-// addEnemy(
-//     1200, 100,
-//     200, 150,
-//     6, 100, 50,
-//     20, 20, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
-//     'enemy', generateEnemyID()
-// );
+addEnemy(
+    1200, 100,
+    200, 150,
+    6, 100, 50,
+    20, 20, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(250, 1000),
+    'enemy', generateEnemyID()
+);

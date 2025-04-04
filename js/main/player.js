@@ -7,6 +7,7 @@ class Player {
     constructor(
         x, y,
         width, height,
+        speed,
         bulletWidth, bulletHeight, bulletColor,
         bulletSpeedX, bulletSpeedY, shootDelay,
         bulletOwner
@@ -15,6 +16,7 @@ class Player {
         this.y = y;
         this.width = width;
         this.height = height;
+        this.speed = speed;
         this.currentSpeedX = 0;
         this.currentSpeedY = 0;
         this.bulletWidth = bulletWidth;
@@ -28,15 +30,70 @@ class Player {
     };
 
     processMovingControls() {
-        if (controls.isDKeyDown) { this.currentSpeedX = 10 };
-        if (controls.isAKeyDown) { this.currentSpeedX = -10 };
+        if (controls.isDKeyDown) { this.currentSpeedX = this.speed };
+        if (controls.isAKeyDown) { this.currentSpeedX = -1 * this.speed };
+        if (controls.isSKeyDown) { this.currentSpeedY = this.speed };
+        if (controls.isWKeyDown) { this.currentSpeedY = -1 * this.speed };
+
+        if (controls.isWKeyDown && controls.isDKeyDown) {
+            // Нормализация вектора скорости
+            const length = Math.sqrt(this.speed * this.speed + this.speed * this.speed);
+            const normalizedCurrentSpeedX = this.speed / length;
+            const normalizedCurrentSpeedY = this.speed / length;
+
+            // Ожидаемая скорость пули, среднее между двумя скоростями.
+            const expectedSpeed = this.speed;
+
+            // Умножаем нормализованный вектор на скорость
+            this.currentSpeedX = normalizedCurrentSpeedX * expectedSpeed;
+            this.currentSpeedY = -1 * normalizedCurrentSpeedY * expectedSpeed;
+        };
+
+        if (controls.isDKeyDown && controls.isSKeyDown) {
+            // Нормализация вектора скорости
+            const length = Math.sqrt(this.speed * this.speed + this.speed * this.speed);
+            const normalizedCurrentSpeedX = this.speed / length;
+            const normalizedCurrentSpeedY = this.speed / length;
+
+            // Ожидаемая скорость пули, среднее между двумя скоростями.
+            const expectedSpeed = this.speed;
+
+            // Умножаем нормализованный вектор на скорость
+            this.currentSpeedX = normalizedCurrentSpeedX * expectedSpeed;
+            this.currentSpeedY = normalizedCurrentSpeedY * expectedSpeed;
+        };
+
+        if (controls.isSKeyDown && controls.isAKeyDown) {
+            // Нормализация вектора скорости
+            const length = Math.sqrt(this.speed * this.speed + this.speed * this.speed);
+            const normalizedCurrentSpeedX = this.speed / length;
+            const normalizedCurrentSpeedY = this.speed / length;
+
+            // Ожидаемая скорость пули, среднее между двумя скоростями.
+            const expectedSpeed = this.speed;
+
+            // Умножаем нормализованный вектор на скорость
+            this.currentSpeedX = -1 * normalizedCurrentSpeedX * expectedSpeed;
+            this.currentSpeedY = normalizedCurrentSpeedY * expectedSpeed;
+        };
+
+        if (controls.isAKeyDown && controls.isWKeyDown) {
+            // Нормализация вектора скорости
+            const length = Math.sqrt(this.speed * this.speed + this.speed * this.speed);
+            const normalizedCurrentSpeedX = this.speed / length;
+            const normalizedCurrentSpeedY = this.speed / length;
+
+            // Ожидаемая скорость пули, среднее между двумя скоростями.
+            const expectedSpeed = this.speed;
+
+            // Умножаем нормализованный вектор на скорость
+            this.currentSpeedX = -1 * normalizedCurrentSpeedX * expectedSpeed;
+            this.currentSpeedY = -1 * normalizedCurrentSpeedY * expectedSpeed;
+        };
 
         if ((controls.isDKeyDown && controls.isAKeyDown) || (!controls.isAKeyDown && !controls.isDKeyDown)) {
             this.currentSpeedX = 0;
         };
-
-        if (controls.isSKeyDown) { this.currentSpeedY = 10 };
-        if (controls.isWKeyDown) { this.currentSpeedY = -10 };
 
         if ((controls.isSKeyDown && controls.isWKeyDown) || (!controls.isSKeyDown && !controls.isWKeyDown)) {
             this.currentSpeedY = 0;
@@ -230,7 +287,8 @@ export const players = {
     playerOne: new Player(
         100, 250,
         50, 50,
-        10, 10,'#00ffea',
+        10,
+        10, 10, '#00ffea',
         10, 10, 300,
         'player'
     )
