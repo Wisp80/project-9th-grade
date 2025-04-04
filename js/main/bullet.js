@@ -1,6 +1,8 @@
 'use strict';
 import { canvas, ctx } from '../canvas/canvas.js';
+import { players } from './player.js';
 import { enemies } from './enemy.js';
+import { rocks } from './rock.js';
 import { mathHelper } from '../helpers/mathHelper.js';
 
 export class Bullet {
@@ -9,7 +11,7 @@ export class Bullet {
         width, height,
         color,
         currentSpeedX, currentSpeedY,
-        owner
+        owner, ID
     ) {
         this.x = x;
         this.y = y;
@@ -19,6 +21,7 @@ export class Bullet {
         this.currentSpeedX = currentSpeedX;
         this.currentSpeedY = currentSpeedY;
         this.owner = owner;
+        this.ID = ID;
         if (currentSpeedX === 0 && currentSpeedY < 0) { this.direction = 'north' };
         if (currentSpeedX > 0 && currentSpeedY < 0) { this.direction = 'north-east' };
         if (currentSpeedX > 0 && currentSpeedY === 0) { this.direction = 'east' };
@@ -65,15 +68,31 @@ export class Bullet {
             bullets.splice(bullets.indexOf(this), 1);
         };
 
+        for (let i = 0; i < rocks.length; i++) {
+            if (mathHelper.isPointInsidePolygon({ x: this.x, y: this.y }, rocks[i].vertices)) {
+                bullets.splice(bullets.indexOf(this), 1);
+            };
+        };
+
         if (this.owner === 'player') {
             const bulletCenterPoint = { x: this.x + this.width / 2, y: this.y + this.height / 2 };
 
-            for (const key in enemies) {
-                if (mathHelper.isPointInsidePolygon(bulletCenterPoint, enemies[key].vertices)) {
-                    delete enemies[key];
+            for (const enemy of enemies) {
+                if (mathHelper.isPointInsidePolygon(bulletCenterPoint, enemy.vertices)) {
+                    enemies.splice(enemies.indexOf(enemy), 1);
                     bullets.splice(bullets.indexOf(this), 1);
                 };
             };
+        };
+
+        if (
+            this.owner === 'enemy' && mathHelper.isPointInsideNotRotatedRectangle(
+                players.playerOne.x, players.playerOne.x + players.playerOne.width,
+                players.playerOne.y, players.playerOne.y + players.playerOne.height,
+                this.x, this.y
+            )
+        ) {
+            console.log('HIT');
         };
     };
 
@@ -82,8 +101,31 @@ export class Bullet {
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.fillStyle = '#ff0000';
         ctx.fillRect(this.x + this.width / 2, this.y + this.height / 2, 20, 2);
-
     };
 };
 
+const bulletIDs = []
 export const bullets = [];
+
+function generateBulletID() {
+    let bulletID = mathHelper.getRandomIntFromInterval(0, 1000).toString();
+    while (bulletIDs.includes(bulletID)) { bulletID = mathHelper.getRandomIntFromInterval(0, 1000).toString() };
+    bulletIDs.push(bulletID);
+    return bulletID;
+};
+
+export function createBullet(
+    x, y,
+    width, height,
+    color,
+    currentSpeedX, currentSpeedY,
+    owner
+) {
+    bullets.push(new Bullet(
+        x, y,
+        width, height,
+        color,
+        currentSpeedX, currentSpeedY,
+        owner, generateBulletID()
+    ));
+};

@@ -1,6 +1,8 @@
 'use strict';
 import { players } from './player.js';
 import { enemies } from './enemy.js';
+import { rocks } from './rock.js';
+import { puddles } from './puddle.js';
 import { bullets } from './bullet.js';
 import { graphicsHelper } from '../helpers/graphicsHelper.js';
 import { mathHelper } from '../helpers/mathHelper.js';
@@ -10,6 +12,7 @@ export const game = {
     setTimeoutID: null,
     ticks: 0,
     currentFPS: 0,
+    currentLevel: 1,
     finished: false,
 
     tick: function () {
@@ -24,8 +27,8 @@ export const game = {
         this.ticks++;
         players.playerOne.processControls();
         players.playerOne.move();
-        for (const key in enemies) { enemies[key].move() };
-        for (const key in enemies) { enemies[key].shoot() };
+        if (enemies.length > 0) { for (const enemy of enemies) { enemy.move() } }
+        if (enemies.length > 0) { for (const enemy of enemies) { enemy.shoot() } }
         if (bullets.length > 0) { for (const bullet of bullets) { bullet.move() } };
         this.calculateFPS();
     },
@@ -34,9 +37,12 @@ export const game = {
         graphicsHelper.clearScreen();
         graphicsHelper.drawGrid();
         players.playerOne.draw();
-        for (const key in enemies) { enemies[key].draw() };
+        if (enemies.length > 0) { for (const enemy of enemies) { enemy.draw() } }
         if (bullets.length > 0) { for (const bullet of bullets) { bullet.draw() } };
+        if (rocks.length > 0) { for (const rock of rocks) { rock.draw() } };
+        if (puddles.length > 0) { for (const puddle of puddles) { puddle.draw() } };
         this.drawFPS();
+        this.drawCurrentLevel();
 
         /*Проверяем находится ли какая-то точка внутри многоугольника при помощи метода "helper.isPointInsidePolygon()". 
         Это нужно только для тестирования.*/
@@ -94,5 +100,11 @@ export const game = {
         ctx.fillStyle = '#c1ec23';
         ctx.font = '30px serif';
         ctx.fillText(this.currentFPS, 25, 25);
+    },
+
+    drawCurrentLevel: function () {
+        ctx.fillStyle = '#ec5c23';
+        ctx.font = '30px serif';
+        ctx.fillText(this.currentLevel, 75, 25);
     }
 };
