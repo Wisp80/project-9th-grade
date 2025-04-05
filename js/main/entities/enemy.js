@@ -1,8 +1,8 @@
 'use strict';
-import { mathHelper } from '../../helpers/mathHelper.js';
-import { game } from '../game.js';
 import { canvasData, ctx } from '../../canvas/canvas.js';
+import { mathHelper } from '../../helpers/mathHelper.js';
 import { graphicsHelper } from '../../helpers/graphicsHelper.js';
+import { game } from '../game.js';
 import { createBullet } from './bullet.js';
 
 class Enemy {
@@ -11,14 +11,17 @@ class Enemy {
         width, height,
         speed,
         numberOfVertices, clockwiseStepX, clockwiseStepY,
-        bulletWidth, bulletHeight, bulletColor,
+        bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
         bulletSpeedX, bulletSpeedY, shootDelay,
-        bulletOwner, ID
+        bulletOwner, bulletIDs, bullets,
+        players, enemies, rocks,
+        ID
     ) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.color = 'rgba(48, 48, 44, 0.6)';
         this.speed = speed;
         this.numberOfVertices = numberOfVertices;
         this.clockwiseStepX = clockwiseStepX;
@@ -33,15 +36,21 @@ class Enemy {
             true
         );
 
-        this.bulletWidth = bulletWidth;
-        this.bulletHeight = bulletHeight;
-        this.bulletColor = bulletColor;
+        this.bulletRadius = bulletRadius;
+        this.bulletStrokeStyle = bulletStrokeStyle;
+        this.bulletLineWidth = bulletLineWidth;
+        this.bulletFillStyle = bulletFillStyle;
         this.bulletSpeedX = bulletSpeedX;
         this.bulletSpeedY = bulletSpeedY;
         this.shootDelay = shootDelay;
         this.bulletOwner = bulletOwner;
         this.shotRecently = false;
         this.ID = ID;
+        this.players = players;
+        this.enemies = enemies;
+        this.rocks = rocks;
+        this.bulletIDs = bulletIDs;
+        this.bullets = bullets;
     };
 
     moveX() {
@@ -78,23 +87,20 @@ class Enemy {
         const direction = mathHelper.getRandomIntFromInterval(1, 8);
 
         const makeOneShot = (
-            x, y,
-            width, height,
-            color,
-            currentSpeedX, currentSpeedY,
-            owner
+            currentSpeedX, currentSpeedY
         ) => {
             createBullet(
-                x, y,
-                width, height,
-                color,
+                this.x + this.width / 2, this.y + this.height / 2, this.bulletRadius,
+                this.bulletStrokeStyle, this.bulletLineWidth, this.bulletFillStyle,
                 currentSpeedX, currentSpeedY,
-                owner
+                this.bulletOwner,
+                this.players, this.enemies, this.rocks, this.bullets,
+                this.bulletIDs
             );
 
             this.shotRecently = true;
 
-            let setTimeoutID = setTimeout(
+            const setTimeoutID = setTimeout(
                 () => {
                     this.shotRecently = false;
                     clearTimeout(setTimeoutID);
@@ -106,90 +112,42 @@ class Enemy {
         if (!this.shotRecently) {
             switch (direction) {
                 case 1: {
-                    makeOneShot(
-                        this.x + this.width / 2, this.y + this.height / 2,
-                        this.bulletWidth, this.bulletHeight, this.bulletColor,
-                        this.bulletSpeedX, -1 * this.bulletSpeedY,
-                        this.bulletOwner
-                    );
-
+                    makeOneShot(this.bulletSpeedX, -1 * this.bulletSpeedY);
                     break;
                 }
 
                 case 2: {
-                    makeOneShot(
-                        this.x + this.width / 2, this.y + this.height / 2,
-                        this.bulletWidth, this.bulletHeight, this.bulletColor,
-                        this.bulletSpeedX, this.bulletSpeedY,
-                        this.bulletOwner
-                    );
-
+                    makeOneShot(this.bulletSpeedX, this.bulletSpeedY);
                     break;
                 }
 
                 case 3: {
-                    makeOneShot(
-                        this.x + this.width / 2, this.y + this.height / 2,
-                        this.bulletWidth, this.bulletHeight, this.bulletColor,
-                        -1 * this.bulletSpeedX, this.bulletSpeedY,
-                        this.bulletOwner
-                    );
-
+                    makeOneShot(-1 * this.bulletSpeedX, this.bulletSpeedY);
                     break;
                 }
 
                 case 4: {
-                    makeOneShot(
-                        this.x + this.width / 2, this.y + this.height / 2,
-                        this.bulletWidth, this.bulletHeight, this.bulletColor,
-                        -1 * this.bulletSpeedX, -1 * this.bulletSpeedY,
-                        this.bulletOwner
-                    );
-
+                    makeOneShot(-1 * this.bulletSpeedX, -1 * this.bulletSpeedY);
                     break;
                 }
 
                 case 5: {
-                    makeOneShot(
-                        this.x + this.width / 2, this.y + this.height / 2,
-                        this.bulletWidth, this.bulletHeight, this.bulletColor,
-                        0, -1 * this.bulletSpeedY,
-                        this.bulletOwner
-                    );
-
+                    makeOneShot(0, -1 * this.bulletSpeedY);
                     break;
                 }
 
                 case 6: {
-                    makeOneShot(
-                        this.x + this.width / 2, this.y + this.height / 2,
-                        this.bulletWidth, this.bulletHeight, this.bulletColor,
-                        this.bulletSpeedX, 0,
-                        this.bulletOwner
-                    );
-
+                    makeOneShot(this.bulletSpeedX, 0);
                     break;
                 }
 
                 case 7: {
-                    makeOneShot(
-                        this.x + this.width / 2, this.y + this.height / 2,
-                        this.bulletWidth, this.bulletHeight, this.bulletColor,
-                        0, this.bulletSpeedY,
-                        this.bulletOwner
-                    );
-
+                    makeOneShot(0, this.bulletSpeedY);
                     break;
                 }
 
                 case 8: {
-                    makeOneShot(
-                        this.x + this.width / 2, this.y + this.height / 2,
-                        this.bulletWidth, this.bulletHeight, this.bulletColor,
-                        -1 * this.bulletSpeedX, 0,
-                        this.bulletOwner
-                    );
-
+                    makeOneShot(-1 * this.bulletSpeedX, 0);
                     break;
                 }
 
@@ -201,100 +159,52 @@ class Enemy {
     };
 
     draw() {
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'red';
-        ctx.strokeRect(this.x, this.y, this.width, this.height);
+        // ctx.lineWidth = 1;
+        // ctx.strokeStyle = 'red';
+        // ctx.strokeRect(this.x, this.y, this.width, this.height);
 
-        graphicsHelper.drawPolygonFromVertices(this.vertices, 1, 'yellow', 'rgb(20, 2, 50, 0.6)');
+        const colors = [
+            'rgb(20, 2, 50, 0.6)',
+            'rgba(2, 50, 40, 0.6)',
+            'rgba(7, 66, 84, 0.6)',
+            'rgba(47, 5, 22, 0.6)',
+            'rgba(47, 45, 5, 0.6)',
+            'rgba(48, 48, 44, 0.6)'
+        ];
+
+        if (game.ticks % 10 === 0) { this.color = colors[mathHelper.getRandomIntFromInterval(0, colors.length - 1)] };
+
+        graphicsHelper.drawPolygonFromVertices(this.vertices, 1, 'yellow', this.color);
     };
 };
 
-const enemyIDs = [];
-export const enemies = [];
-
-function generateEnemyID() {
+function generateEnemyID(enemyIDs) {
     let enemyID = mathHelper.getRandomIntFromInterval(0, 1000).toString();
     while (enemyIDs.includes(enemyID)) { enemyID = mathHelper.getRandomIntFromInterval(0, 1000).toString() };
     enemyIDs.push(enemyID);
     return enemyID;
 };
 
-function createEnemy(
+export function createEnemy(
     x, y,
     width, height,
     speed,
     numberOfVertices, clockwiseStepX, clockwiseStepY,
-    bulletWidth, bulletHeight, bulletColor,
+    bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
     bulletSpeedX, bulletSpeedY, shootDelay,
-    bulletOwner
+    bulletOwner, bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
 ) {
     enemies.push(new Enemy(
         x, y,
         width, height,
         speed,
         numberOfVertices, clockwiseStepX, clockwiseStepY,
-        bulletWidth, bulletHeight, bulletColor,
+        bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
         bulletSpeedX, bulletSpeedY, shootDelay,
-        bulletOwner, generateEnemyID()
+        bulletOwner, bulletIDs, bullets,
+        players, enemies, rocks,
+        generateEnemyID(enemyIDs)
     ));
 };
-
-createEnemy(
-    200, 650,
-    150, 200,
-    40,
-    6, 50, 100,
-    20, 20, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy'
-);
-
-createEnemy(
-    300, 200,
-    200, 150,
-    40,
-    6, 100, 50,
-    20, 20, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy'
-);
-
-createEnemy(
-    600, 300,
-    150, 200,
-    40,
-    6, 50, 100,
-    20, 20, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy'
-);
-
-createEnemy(
-    900, 600,
-    200, 150,
-    40,
-    6, 100, 50,
-    20, 20, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy'
-);
-
-createEnemy(
-    1100, 400,
-    150, 200,
-    40,
-    6, 50, 100,
-    20, 20, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy'
-);
-
-createEnemy(
-    1200, 100,
-    200, 150,
-    40,
-    6, 100, 50,
-    20, 20, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy'
-);

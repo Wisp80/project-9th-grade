@@ -52,8 +52,8 @@ export const graphicsHelper = {
     /*Метод "clearScreen()" очищает экран.
     Метод "clearScreen()" не принимает никаких параметров.
     Метод "clearScreen()" ничего не возвращает.*/
-    clearScreen: function () {
-        ctx.fillStyle = 'rgb(66, 125, 212)';
+    clearScreen: function (color) {
+        ctx.fillStyle = color;
         ctx.fillRect(0, 0, canvasData.canvasWidth, canvasData.canvasHeight);
     },
 
@@ -61,7 +61,7 @@ export const graphicsHelper = {
     Метод "drawGrid()" не принимает никаких параметров.
     Метод "drawGrid()" ничего не возвращает.*/
     drawGrid: function () {
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 0.05;
         ctx.strokeStyle = 'black';
 
         for (let i = 0; i < canvasData.canvasWidth; i += canvasData.cellWidth) {

@@ -1,23 +1,22 @@
 'use strict';
 import { canvas, ctx } from '../../canvas/canvas.js';
-import { players } from './player.js';
-import { enemies } from './enemy.js';
-import { rocks } from './rock.js';
 import { mathHelper } from '../../helpers/mathHelper.js';
 
-export class Bullet {
+class Bullet {
     constructor(
-        x, y,
-        width, height,
-        color,
+        x, y, radius, 
+        strokeStyle, lineWidth, fillStyle,
         currentSpeedX, currentSpeedY,
-        owner, ID
+        owner,
+        players, enemies, rocks, bullets,
+        ID
     ) {
         this.x = x;
         this.y = y;
-        this.width = width;
-        this.height = height;
-        this.color = color;
+        this.radius = radius;
+        this.strokeStyle = strokeStyle;
+        this.lineWidth = lineWidth;
+        this.fillStyle = fillStyle;
         this.currentSpeedX = currentSpeedX;
         this.currentSpeedY = currentSpeedY;
         this.owner = owner;
@@ -36,18 +35,17 @@ export class Bullet {
             this.direction === 'south-west' ||
             this.direction === 'north-west'
         ) {
-            // Нормализация вектора скорости
             const length = Math.sqrt(currentSpeedX * currentSpeedX + currentSpeedY * currentSpeedY);
             const normalizedCurrentSpeedX = currentSpeedX / length;
             const normalizedCurrentSpeedY = currentSpeedY / length;
-
-            // Ожидаемая скорость пули, среднее между двумя скоростями.
-            const expectedCurrentSpeed = (Math.abs(currentSpeedX) + Math.abs(currentSpeedY)) / 2;
-
-            // Умножаем нормализованный вектор на скорость
-            this.currentSpeedX = normalizedCurrentSpeedX * expectedCurrentSpeed;
-            this.currentSpeedY = normalizedCurrentSpeedY * expectedCurrentSpeed;
+            this.currentSpeedX = normalizedCurrentSpeedX * Math.abs(currentSpeedX);
+            this.currentSpeedY = normalizedCurrentSpeedY * Math.abs(currentSpeedY);
         }
+
+        this.players = players;
+        this.enemies = enemies;
+        this.rocks = rocks;
+        this.bullets = bullets;
     };
 
     moveX() {
@@ -65,49 +63,62 @@ export class Bullet {
         this.moveY();
 
         if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
-            bullets.splice(bullets.indexOf(this), 1);
+            this.bullets.splice(this.bullets.indexOf(this), 1);
         };
 
-        for (let i = 0; i < rocks.length; i++) {
-            if (mathHelper.isPointInsidePolygon({ x: this.x, y: this.y }, rocks[i].vertices)) {
-                bullets.splice(bullets.indexOf(this), 1);
+        for (let i = 0; i < this.rocks.length; i++) {
+            if (mathHelper.isPointInsidePolygon({ x: this.x, y: this.y }, this.rocks[i].vertices)) {
+                this.bullets.splice(this.bullets.indexOf(this), 1);
             };
         };
 
         if (this.owner === 'player') {
-            const bulletCenterPoint = { x: this.x + this.width / 2, y: this.y + this.height / 2 };
+            const bulletCenterPoint = { x: this.x, y: this.y };
 
-            for (const enemy of enemies) {
+            for (const enemy of this.enemies) {
                 if (mathHelper.isPointInsidePolygon(bulletCenterPoint, enemy.vertices)) {
-                    enemies.splice(enemies.indexOf(enemy), 1);
-                    bullets.splice(bullets.indexOf(this), 1);
+                    this.enemies.splice(this.enemies.indexOf(enemy), 1);
+                    this.bullets.splice(this.bullets.indexOf(this), 1);
                 };
             };
         };
 
         if (
             this.owner === 'enemy' && mathHelper.isPointInsideNotRotatedRectangle(
-                players.playerOne.x, players.playerOne.x + players.playerOne.width,
-                players.playerOne.y, players.playerOne.y + players.playerOne.height,
+                this.players.playerOne.x, this.players.playerOne.x + this.players.playerOne.width,
+                this.players.playerOne.y, this.players.playerOne.y + this.players.playerOne.height,
                 this.x, this.y
             )
         ) {
-            console.log('HIT');
+            if (!this.players.playerOne.tookDamageRecently) {
+                this.players.playerOne.tookDamageRecently = true;
+                this.players.playerOne.healthPoints--;
+
+                const setTimeoutID = setTimeout(
+                    () => {
+                        this.players.playerOne.tookDamageRecently = false;
+                        clearTimeout(setTimeoutID)
+                    },
+                    this.players.playerOne.takeDamageDelay
+                );
+            };
+
+            this.bullets.splice(this.bullets.indexOf(this), 1);
         };
     };
 
     draw() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        ctx.fillStyle = '#ff0000';
-        ctx.fillRect(this.x + this.width / 2, this.y + this.height / 2, 20, 2);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI); // Параметры: x, y, радиус, начальный угол, конечный угол
+        ctx.strokeStyle = this.strokeStyle;
+        ctx.lineWidth = this.lineWidth;
+        ctx.stroke();
+        ctx.fillStyle = this.fillStyle;
+        ctx.fill();
     };
 };
 
-const bulletIDs = []
-export const bullets = [];
-
-function generateBulletID() {
+function generateBulletID(bulletIDs) {
     let bulletID = mathHelper.getRandomIntFromInterval(0, 1000).toString();
     while (bulletIDs.includes(bulletID)) { bulletID = mathHelper.getRandomIntFromInterval(0, 1000).toString() };
     bulletIDs.push(bulletID);
@@ -115,17 +126,19 @@ function generateBulletID() {
 };
 
 export function createBullet(
-    x, y,
-    width, height,
-    color,
+    x, y, radius, 
+    strokeStyle, lineWidth, fillStyle,
     currentSpeedX, currentSpeedY,
-    owner
+    owner,
+    players, enemies, rocks, bullets,
+    bulletIDs
 ) {
     bullets.push(new Bullet(
-        x, y,
-        width, height,
-        color,
+        x, y, radius, 
+        strokeStyle, lineWidth, fillStyle,
         currentSpeedX, currentSpeedY,
-        owner, generateBulletID()
+        owner,
+        players, enemies, rocks, bullets,
+        generateBulletID(bulletIDs)
     ));
 };
