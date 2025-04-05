@@ -30,6 +30,24 @@ class Rock {
             true
         );
 
+        // for (let i = 0; i < this.vertices.length; i++) {
+        //     if (this.vertices[i].x <= 75) {
+        //         for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x += 75 };;
+        //     };
+
+        //     if (this.vertices[i].x >= canvasData.canvasWidth - 75) {
+        //         for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x -= 75 };
+        //     };
+
+        //     if (this.vertices[i].Y <= 75) {
+        //         for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y += 75 };;
+        //     };
+
+        //     if (this.vertices[i].y >= canvasData.canvasHeight - 75) {
+        //         for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y -= 75 };
+        //     };
+        // };
+
         this.ID = ID;
     };
 

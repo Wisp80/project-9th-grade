@@ -4,6 +4,7 @@ import { controls } from '../controls.js';
 import { mathHelper } from '../../helpers/mathHelper.js';
 import { game } from '../game.js';
 import { createBullet } from './bullet.js';
+import { graphicsHelper } from '../../helpers/graphicsHelper.js';
 
 export class Player {
     constructor(
@@ -82,13 +83,14 @@ export class Player {
         let currentSpeed;
         if (this.slowed) { currentSpeed = this.speed * this.slowDebuffMultiplier } else { currentSpeed = this.speed };
 
-        /*В зависимости от нажатых одиночных кнопок WASD устанавливаем скорости по оси X и по оси Y.*/
+        /*В зависимости от нажатых одиночных кнопок "WASD" устанавливаем текущие скорости по оси X и по оси Y.*/
         if (controls.isDKeyDown) { this.currentSpeedX = currentSpeed };
         if (controls.isAKeyDown) { this.currentSpeedX = -1 * currentSpeed };
         if (controls.isSKeyDown) { this.currentSpeedY = currentSpeed };
         if (controls.isWKeyDown) { this.currentSpeedY = -1 * currentSpeed };
 
-        /*В зависимости от нажатых комбинаций из двух кнопок WASD устанавливаем скорости по оси X и по оси Y.*/
+        /*В зависимости от нажатых диагональных комбинаций двух кнопок "WASD" устанавливаем текущие скорости по оси X и 
+        по оси Y.*/
         if (controls.isWKeyDown && controls.isDKeyDown) {
             /*Когда объект движется по диагонали, его скорость должна быть распределена между X-направлением и 
             Y-направлением. Если просто установить одинаковую скорость по обеим осям, то фактическая скорость объекта 
@@ -154,11 +156,12 @@ export class Player {
             this.currentSpeedY = -1 * normalizedCurrentSpeedY * currentSpeed;
         };
 
-        /*Зануляем скорости по оси X и по оси Y если нажаты или отжаты комбинации из двух противоположных кнопок WASD.*/
+        /*Зануляем текущую скорость по оси X, если одновременно нажаты или отжаты кнопки "D" и "A".*/
         if ((controls.isDKeyDown && controls.isAKeyDown) || (!controls.isAKeyDown && !controls.isDKeyDown)) {
             this.currentSpeedX = 0;
         };
 
+        /*Зануляем текущую скорость по оси Y, если одновременно нажаты или отжаты кнопки "S" и "W".*/
         if ((controls.isSKeyDown && controls.isWKeyDown) || (!controls.isSKeyDown && !controls.isWKeyDown)) {
             this.currentSpeedY = 0;
         };
@@ -168,7 +171,7 @@ export class Player {
     Метод "processShootingControls()" не принимает никаких параметров.
     Метод "processShootingControls()" ничего не возвращает.*/
     processShootingControls() {
-        /*Если нажата одна из неразрешенных комбинаций кнопок стрельбы, то не стреляем.*/
+        /*Если нажата одна из неразрешенных комбинаций кнопок стрельбы, то не персонаж не стреляет.*/
         if (controls.isUpArrowKeyDown && controls.isDownArrowKeyDown ||
             controls.isRightArrowKeyDown && controls.isLeftArrowKeyDown ||
             controls.isUpArrowKeyDown && controls.isRightArrowKeyDown && controls.isDownArrowKeyDown ||
@@ -181,11 +184,21 @@ export class Player {
             return;
         };
 
-        /**/
+        /*Создаем вспомогательную локальную функцию "makeOneShot()", которая позволяет удобно создавать объекты, 
+        содержащие данные о пулях.
+        
+        Функция "makeOneShot()" принимает следующие параметры:
+        1. "x" - это числовой параметр, указывающий X-координату пули.
+        2. "y" - это числовой параметр, указывающий Y-координату пули.
+        3. "currentSpeedX" - это числовой параметр, указывающий текущую скорость пули по оси X.
+        4. "currentSpeedY" - это числовой параметр, указывающий текущую скорость пули по оси Y.
+
+        Функция "makeOneShot()" ничего не возвращает.*/
         const makeOneShot = (
             x, y,
             currentSpeedX, currentSpeedY
         ) => {
+            /*Создаем объект, содержащий данные о пули, при помощи функции "createBullet()".*/
             createBullet(
                 x, y, this.bulletRadius,
                 this.bulletStrokeStyle, this.bulletLineWidth, this.bulletFillStyle,
@@ -195,8 +208,13 @@ export class Player {
                 this.bulletIDs
             );
 
+            /*Устанавливаем флаг, указывающий, что персонаж недавно стрелял, то есть персонаж больше не может 
+            стрелять.*/
             this.shotRecently = true;
 
+            /*Вызываем функцию "setTimeout()", которая создает таймер на "shootDelay" милисекунд. Когда таймер истекает
+            вызывается callback-функция, которая установливает флаг, указывающий, что персонаж не стрелял недавно, то 
+            есть персонаж снова может стрелять.*/
             const setTimeoutID = setTimeout(
                 () => {
                     this.shotRecently = false;
@@ -208,56 +226,58 @@ export class Player {
             return;
         };
 
-        if (controls.isUpArrowKeyDown && controls.isRightArrowKeyDown && !this.shotRecently) {
+        /*Если персонаж недавно не стрелял, то проверяем не нажаты ли какие-то кнопки стрельбы, и если нажаты, то 
+        персонаж делает выстрел в каком-то направлении.*/
+        if (!this.shotRecently && controls.isUpArrowKeyDown && controls.isRightArrowKeyDown) {
             makeOneShot(
                 this.x + this.width, this.y,
                 this.bulletSpeedX, -1 * this.bulletSpeedY
             );
         };
 
-        if (controls.isRightArrowKeyDown && controls.isDownArrowKeyDown && !this.shotRecently) {
+        if (!this.shotRecently && controls.isRightArrowKeyDown && controls.isDownArrowKeyDown) {
             makeOneShot(
                 this.x + this.width, this.y + this.height,
                 this.bulletSpeedX, this.bulletSpeedY
             );
         };
 
-        if (controls.isDownArrowKeyDown && controls.isLeftArrowKeyDown && !this.shotRecently) {
+        if (!this.shotRecently && controls.isDownArrowKeyDown && controls.isLeftArrowKeyDown) {
             makeOneShot(
                 this.x, this.y + this.height,
                 -1 * this.bulletSpeedX, this.bulletSpeedY
             );
         };
 
-        if (controls.isLeftArrowKeyDown && controls.isUpArrowKeyDown && !this.shotRecently) {
+        if (!this.shotRecently && controls.isLeftArrowKeyDown && controls.isUpArrowKeyDown) {
             makeOneShot(
                 this.x, this.y,
                 -1 * this.bulletSpeedX, -1 * this.bulletSpeedY
             );
         };
 
-        if (controls.isUpArrowKeyDown && !this.shotRecently) {
+        if (!this.shotRecently && controls.isUpArrowKeyDown) {
             makeOneShot(
                 this.x + (this.width / 2), this.y,
                 0, -1 * this.bulletSpeedY
             );
         };
 
-        if (controls.isRightArrowKeyDown && !this.shotRecently) {
+        if (!this.shotRecently && controls.isRightArrowKeyDown) {
             makeOneShot(
                 this.x + this.width, this.y + (this.height / 2),
                 this.bulletSpeedX, 0
             );
         };
 
-        if (controls.isDownArrowKeyDown && !this.shotRecently) {
+        if (!this.shotRecently && controls.isDownArrowKeyDown) {
             makeOneShot(
                 this.x + (this.width / 2), this.y + this.height,
                 0, this.bulletSpeedY
             );
         };
 
-        if (controls.isLeftArrowKeyDown && !this.shotRecently) {
+        if (!this.shotRecently && controls.isLeftArrowKeyDown) {
             makeOneShot(
                 this.x, this.y + (this.height / 2),
                 -1 * this.bulletSpeedX, 0
@@ -265,39 +285,60 @@ export class Player {
         };
     };
 
+    /*Метод "processControls()" совмещает вызовы методов "processMovingControls()" и "processShootingControls()".
+    Метод "processControls()" не принимает никаких параметров.
+    Метод "processControls()" ничего не возвращает.*/
     processControls() {
         this.processMovingControls();
         this.processShootingControls();
     };
 
+    /*Метод "moveX()" обрабатывает движение персонажа по оси X.
+    Метод "moveX()" не принимает никаких параметров.
+    Метод "moveX()" ничего не возвращает.*/
     moveX() {
-        /*raw prediction of next X.*/
+        /*Создаем переменную "nextX" для хранения X-координаты персонажа в следующем кадре, которую "предсказываем" в 
+        ходе работы этого метода. Изначально эта X-координата равна текущей X-координате увеличенной на текущую скорость 
+        персонажа по оси X.*/
         let nextX = this.x + this.currentSpeedX;
-        /*if our raw prediction of next X has changed or not.*/
+        /*Создаем переменную "isPredictedXChanged", которая обозначает флаг, менялась ли предсказываемая X-координата
+        персонажа для следующего кадра или нет.*/
         let isPredictedXChanged = false;
 
-        /*if we have any X-movement.*/
-        if (this.currentSpeedX !== 0) {
-            /*in order to prevent from teleportation through objects we check if our speed is greater than our width.*/
+        /*Если у персонажа есть ненулевая текущая скорость по оси X и есть какие-то камни на экране, то дополнительно 
+        проверяем предсказываемую X-координату персонажа для следующего кадра и, если есть необходимость, корректируем 
+        ее.*/
+        if (this.currentSpeedX !== 0 && this.rocks.length > 0) {
+            /*Поскольку движение персонажа осуществляется не как в реальной жизни, а путем "телепортирования" из одной 
+            точки в другую, то на случай, если текущая скорость персонажа по оси X больше ширины персонажа, проверяем
+            не получается ли так, что персонаж проскакивает через какие-то камни в следующем кадре.*/
             if (Math.abs(this.currentSpeedX) > this.width) {
-                /*variable for our predicted way to the right.*/
-                let predictedHorizontalWayToTheRightVertices = null;
-                /*variable for our predicted way to the left.*/
-                let predictedHorizontalWayToTheLeftVertices = null;
+                /*Создаем переменную "horizontalMovementDirection" для хранения горизонтального направления движения 
+                персонажа в следующем кадре.*/
+                let horizontalMovementDirection = null;
+                /*Создаем переменную "predictedHorizontalPathVertices" для хранения массива вершин прямоугольника, 
+                который изображает горизонатальный путь, совершаемый персонажем в следующем кадре. Вершины 
+                прямоугольника в этом массиве начинаются с верхней левой вершины прямоугольника и идут дальше по часовой 
+                стрелке.*/
+                let predictedHorizontalPathVertices = null;
 
-                /*if we move to the right, we prepare data about the way we are going to make.*/
+                /*Если наша текущая скорость персонажа по оси X больше 0, то это означает, что персонаж движется в
+                правую сторону и путь будет совершен тоже в правую сторону. Если же наша текущая скорость персонажа по 
+                оси X меньше 0, то это означает, что персонаж движется в левую сторону и путь будет совершен тоже в 
+                левую сторону.*/
                 if (this.currentSpeedX > 0) {
-                    predictedHorizontalWayToTheRightVertices = [
+                    horizontalMovementDirection = 'right';
+
+                    predictedHorizontalPathVertices = [
                         { x: this.x + this.width, y: this.y },
                         { x: this.x + this.width + this.currentSpeedX, y: this.y },
                         { x: this.x + this.width + this.currentSpeedX, y: this.y + this.height },
                         { x: this.x + this.width, y: this.y + this.height }
                     ];
-                };
+                } else if (this.currentSpeedX < 0) {
+                    horizontalMovementDirection = 'left';
 
-                /*if we move to the left, we prepare data about the way we are going to make.*/
-                if (this.currentSpeedX < 0) {
-                    predictedHorizontalWayToTheLeftVertices = [
+                    predictedHorizontalPathVertices = [
                         { x: this.x - Math.abs(this.currentSpeedX), y: this.y },
                         { x: this.x, y: this.y },
                         { x: this.x, y: this.y + this.height },
@@ -305,24 +346,27 @@ export class Player {
                     ];
                 };
 
-                /*choose one of the predicted ways.*/
-                let chosenPredictedWayVertices = predictedHorizontalWayToTheRightVertices
-                    ? predictedHorizontalWayToTheRightVertices
-                    : predictedHorizontalWayToTheLeftVertices;
-
+                /*Перебираем все камни и проверяем не пересекается ли путь, совершаемый персонажем в следующем кадре,
+                с какими-то камнями. Если есть пересечения, то "выталкиваем" этот путь из пересекаемых камней.*/
                 for (let i = 0; i < this.rocks.length; i++) {
-                    while (mathHelper.doTwoPolygonsIntersect(chosenPredictedWayVertices, this.rocks[i].vertices)) {
-                        for (let j = 0; j < chosenPredictedWayVertices.length; j++) {
-                            chosenPredictedWayVertices[j].x -= Math.sign(this.currentSpeedX);
+                    while (mathHelper.doTwoPolygonsIntersect(predictedHorizontalPathVertices, this.rocks[i].vertices)) {
+                        for (let j = 0; j < predictedHorizontalPathVertices.length; j++) {
+                            predictedHorizontalPathVertices[j].x -= Math.sign(this.currentSpeedX);
                         };
 
+                        /*Указываем, что предсказываемая X-координата изменилась.*/
                         isPredictedXChanged = true;
                     };
                 };
 
-                nextX = predictedHorizontalWayToTheRightVertices
-                    ? predictedHorizontalWayToTheRightVertices[1].x - this.width
-                    : predictedHorizontalWayToTheLeftVertices[0].x;
+                /*В зависимости от направления горизонтального движения персонажа в следующем кадре корректируем 
+                X-координату персонажа в следующем кадре на основе откорректированного горизонтального пути, 
+                совершаемого персонажем в следующем кадре.*/
+                if (horizontalMovementDirection === 'right') {
+                    nextX = predictedHorizontalPathVertices[1].x - this.width;
+                } else if (horizontalMovementDirection === 'left') {
+                    nextX = predictedHorizontalPathVertices[0].x;
+                };
             };
 
             /*if we have not changed our raw prediction of next X yet.*/
@@ -332,7 +376,7 @@ export class Player {
                     { x: this.x + this.currentSpeedX, y: this.y },
                     { x: this.x + this.width + this.currentSpeedX, y: this.y },
                     { x: this.x + this.width + this.currentSpeedX, y: this.y + this.height },
-                    { x: this.x + this.currentSpeedX, y: this.y + this.height },
+                    { x: this.x + this.currentSpeedX, y: this.y + this.height }
                 ];
 
                 for (let i = 0; i < this.rocks.length; i++) {
@@ -351,10 +395,8 @@ export class Player {
 
         /*if we have changed our raw prediction of next X, then it means that we hit a solid object, so we need to stop.*/
         if (isPredictedXChanged) { this.currentSpeedX = 0 };
-
         if (nextX < 0) { nextX = 0 };
         if (nextX + this.width > canvasData.canvasWidth) { nextX = canvasData.canvasWidth - this.width };
-
         this.x = nextX;
     };
 
@@ -385,7 +427,6 @@ export class Player {
                     ];
                 };
 
-                /*choose one of the predicted ways.*/
                 let chosenPredictedWayVertices = predictedVerticalWayDownVertices
                     ? predictedVerticalWayDownVertices
                     : predictedVerticalWayUpVertices;
@@ -405,9 +446,7 @@ export class Player {
                     : predictedVerticalWayUpVertices[0].y;
             };
 
-            /*if we have not changed our raw prediction of next X yet.*/
             if (!isPredictedYChanged) {
-                /*predict our position.*/
                 const predictedVerticalPositionVertices = [
                     { x: this.x, y: this.y + this.currentSpeedY },
                     { x: this.x + this.width, y: this.y + this.currentSpeedY },
@@ -429,12 +468,9 @@ export class Player {
             };
         };
 
-        /*if we have changed our raw prediction of next X, then it means that we hit a solid object, so we need to stop.*/
         if (isPredictedYChanged) { this.currentSpeedY = 0 };
-
         if (nextY < 0) { nextY = 0 };
-        if (nextY + this.height >= canvasData.canvasHeight) { nextY = canvasData.canvasHeight - this.height };
-
+        if (nextY + this.height > canvasData.canvasHeight) { nextY = canvasData.canvasHeight - this.height };
         this.y = nextY;
     };
 
@@ -477,7 +513,6 @@ export class Player {
     };
 
     draw() {
-        // Добавляем в ваш код:
         const angle = (game.ticks % 360) * Math.PI / 180; // Переводим градусы в радианы
         const length = Math.sqrt(this.width * this.width + this.height * this.height); // Длина градиента
 
@@ -510,5 +545,29 @@ export class Player {
 
         // Рисуем прямоугольник
         ctx.fillRect(this.x, this.y, this.width, this.height);
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'lime';
+        ctx.strokeRect(this.x + this.speed, this.y, this.width, this.height);
+
+        // ctx.lineWidth = 1;
+        // ctx.strokeStyle = 'lime';
+        // ctx.strokeRect(this.x - this.speed, this.y, this.width, this.height);
+
+        // ctx.lineWidth = 1;
+        // ctx.strokeStyle = 'lime';
+        // ctx.strokeRect(this.x, this.y - this.speed, this.width, this.height);
+
+        // ctx.lineWidth = 1;
+        // ctx.strokeStyle = 'lime';
+        // ctx.strokeRect(this.x, this.y + this.speed, this.width, this.height);
+
+        // ctx.lineWidth = 1;
+        // ctx.strokeStyle = '#00c3ff';
+        // ctx.strokeRect(this.x + this.width, this.y, this.speed, this.height);
+
+        // ctx.lineWidth = 1;
+        // ctx.strokeStyle = '#00c3ff';
+        // ctx.strokeRect(this.x - this.speed, this.y, this.speed, this.height);
     };
 };

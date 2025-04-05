@@ -30,9 +30,9 @@ export const graphicsHelper = {
             // ctx.strokeRect(vertices[i].x, vertices[i].y, canvasData.cellWidth / 5, canvasData.cellHeight / 5);
 
             /*Отрисовываем номера вершин многоугольника. Это нужно только для тестирования.*/
-            // ctx.fillStyle = 'black';
-            // ctx.font = '30px serif';
-            // ctx.fillText(i + 1, vertices[i].x + 5, vertices[i].y - 5);
+            ctx.fillStyle = 'black';
+            ctx.font = '30px serif';
+            ctx.fillText(i + 1, vertices[i].x + 5, vertices[i].y - 5);
         };
 
         ctx.closePath();

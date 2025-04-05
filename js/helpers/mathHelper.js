@@ -492,7 +492,15 @@ export const mathHelper = {
             point.x, point.y
         );
 
+        /*Проверяем не находится ли точка снаружу "ограничивающей коробки" многоугольника. Если это так, то возвращаем 
+        false, как знак того, что точка находится снаружи многоугольника.*/
         if (!isPointInsidePolygonBoundingBox) { return false };
+
+        /*Проверяем не совпадает ли точка с одной из вершин многоугольника. Если это так, то возвращаем true, как знак 
+        того, что точка находится внутри многоугольника.*/
+        for (let i = 0; i < vertices.length; i++) {
+            if (point.x === vertices[i].x && point.y === vertices[i].y) { return true };
+        };
 
         /*Указанная точка всегда находится снаружи многоугольника, если выполняется одно из следующих условий:
         1. Точка левее минимальной X-координаты многоугольника и выше минимальной Y-координаты многоугольника. 
@@ -539,9 +547,6 @@ export const mathHelper = {
         "helper.findIntPointsOnPolygonEdges()" и сохраняем его в переменную "pointsOnPolygonEdges".*/
         const pointsOnPolygonEdges = this.findIntPointsOnPolygonEdges(vertices);
 
-        /*Создаем переменную "intersections" для подсчета пересечений луча со сторонами многоугольника.*/
-        let intersections = 0;
-
         /*Создаем пусстой массив "intersectionPoints", который нужен для заполнения его целочисленными координатами 
         точек пересечений луча и сторон многоугольника.*/
         const intersectionPoints = [];
@@ -570,27 +575,60 @@ export const mathHelper = {
             };
         };
 
-        /*Пробегаемся по массиву "intersectionPoints" с конца в начало, чтобы регистрировать пересечения точек луча и 
-        точек на сторонах многоугольника. Это мы делаем в каждом случае, кроме случаев когда у соседних точек, которые 
-        находятся на одной и той же Y-координате, их X-координаты отличаются на 1. Эта проверка нужна, чтобы избежать 
-        случаев, когда какая-то сторона многоугольника совпадает с лучом. Эта проверка игнорирует первую точку в 
-        массиве "intersectionPoints", так как для нее нет пары в виде предыдущей точки.*/
+        /*Выводим точки пересечений луча и сторон многоугольника. Это нужно только для тестирования.*/
+        // console.log('intersectionPoints:');
+
+        // for (let i = 0; i < intersectionPoints.length; i++) {
+        //     console.log(intersectionPoints[i].x);
+        //     console.log(intersectionPoints[i].y);
+        //     console.log('------');
+        // };
+
+        // console.log('--------------------------------------');
+
+        /*Пробегаемся по массиву "intersectionPoints" с конца в начало, чтобы убрать соседних точки пересечения отрезка 
+        луча и сторон многоугольника, которые находятся на одной и той же Y-координате, но их X-координаты отличаются на 
+        1. Эта проверка нужна, чтобы избежать случаев, когда какая-то сторона или часть стороный многоугольника 
+        совпадает с отрезком или частью отрезка луча. Эта проверка игнорирует первую точку в массиве 
+        "intersectionPoints", так как для нее нет пары в виде предыдущей точки.*/
         for (let i = intersectionPoints.length - 1; i > 0; i--) {
             if (
-                !(intersectionPoints[i].y === intersectionPoints[i - 1].y &&
-                    intersectionPoints[i].x === intersectionPoints[i - 1].x + 1)
+                intersectionPoints[i].y === intersectionPoints[i - 1].y &&
+                intersectionPoints[i].x === intersectionPoints[i - 1].x + 1
             ) {
-                intersections++;
+                intersectionPoints.pop();
             };
         };
 
-        /*Поскольку в предыдущей проверке мы игнорируем первую точку в массиве "intersectionPoints", отдельно 
-        засчитываем для нее одно пересечение.*/
-        if (intersectionPoints.length > 0) { intersections++ };
+        let pointsEqualToPolygonVerticesCount = 0;
 
-        /*Отрисовываем луч из указанной точки в правую сторону. Это нужно только для тестирования.*/
-        // ctx.fillStyle = 'purple';
-        // ctx.fillRect(point.x, point.y, canvasData.canvasWidth, 10);
+        for (let i = 0; i < intersectionPoints.length; i++) {
+            for (let j = 0; j < vertices.length; j++) {
+                if (intersectionPoints[i].x === vertices[j].x && intersectionPoints[i].y === vertices[j].y) {
+                    pointsEqualToPolygonVerticesCount++;
+                    break;
+                };
+            };
+        };
+
+        if (intersectionPoints.length === pointsEqualToPolygonVerticesCount) { return false };
+
+        /*Создаем переменную "intersections" для подсчета пересечений луча со сторонами многоугольника.*/
+        let intersections = intersectionPoints.length;
+
+        /*Выводим информацию о точке в консоль. Это нужно только для тестирования.*/
+        // console.log('Point:');
+        // console.log(point);
+        // console.log('--------------------------------------');
+
+        /*Выводим итоговое количество пересечений луча и сторон многоугольника. Это нужно только для тестирования.*/
+        // console.log(`intersections: ${intersections}`);
+        // console.log('--------------------------------------');
+
+        /*Выводим точки пересечений луча и сторон многоугольника. Это нужно только для тестирования.*/
+        // console.log('intersectionPoints:');
+        // console.log(intersectionPoints);
+        // console.log('--------------------------------------');
 
         /*Выводим информацию о точках на отрезке луча в консоль. Это нужно только для тестирования.*/
         // console.log(`${rayPoints.length} points on the ray:`);
@@ -602,35 +640,13 @@ export const mathHelper = {
         // console.log(`Intersections between the ray and the polygon's edges: ${intersections}`);
         // console.log('--------------------------------------');
 
+        /*Отрисовываем луч из указанной точки в правую сторону. Это нужно только для тестирования.*/
+        // ctx.fillStyle = 'purple';
+        // ctx.fillRect(point.x, point.y, canvasData.canvasWidth, 10);
+
         /*Если количество пересечений нечетное, что означает точка находится внутри многоугольника, то возвращаем true. 
         Если количество пересечений четное, что означает точка находится снаружи многоугольника, то возвращаем false.*/
-        if (intersections % 2 !== 0) {
-            /*Отрисовываем зеленый квадрат, как знак того, что точка находится внутри многоугольника. Это нужно только 
-            для тестирования.*/
-            // ctx.fillStyle = 'green';
-            // ctx.fillRect(700, 50, 50, 50);
-
-            /*Выводим в консоль true как знак того, что точка находится внутри многоугольника. Это нужно только для 
-            тестирования.*/
-            // console.log(true);
-            // console.log('--------------------------------------');
-
-            /*Метод возвращает true, как знак того, что точка находится внутри многоугольника.*/
-            return true;
-        } else {
-            /*Отрисовываем красный квадрат, как знак того, что точка находится снаружи многоугольника. Это нужно только 
-            для тестирования.*/
-            // ctx.fillStyle = 'red';
-            // ctx.fillRect(700, 50, 50, 50); 
-
-            /*Выводим в консоль false, как знак того, что точка находится снаружи многоугольника. Это нужно только для 
-            тестирования.*/
-            // console.log(false);
-            // console.log('--------------------------------------');
-
-            /*Метод возвращает false, как знак того, что точка находится вне многоугольника.*/
-            return false;
-        };
+        if (intersections % 2 !== 0) { return true } else { return false };
     },
 
     /*Метод "getCrossProduct()" рассчитывает векторное произведение двух векторов.
@@ -1070,14 +1086,16 @@ export const mathHelper = {
 
         /*Если получилось так, что никакие стороны двух многоугольников не пересекаются, то остается два варианта: либо
         многоугольники не пересекаются, либо один многоугольник находится полностью внутри другого многоугольника. 
-        Проверяем здесь последнее при помощи метода "helper.isPointInsidePolygon". Если хотя бы одна вершина одного 
+        Проверяем здесь последнее при помощи метода "helper.isPointInsidePolygon()". Если хотя бы одна вершина одного 
         многоугольника находится внутри другого многоугольника и при этом никакие стороны многоугольников не 
         пересекаются, то это означает, что один многоугольник находится полностью внутри другого многоугольника. Если 
         это так, то возвращаем true, как знак того, что многоугольники пересекаются.*/
         if (
             this.isPointInsidePolygon(vertices01[0], vertices02) ||
             this.isPointInsidePolygon(vertices02[0], vertices01)
-        ) { return true };
+        ) {
+            return true;
+        };
 
         /*Если ни одна проверка не прошла, то возвращаем false, как знак того, что многоугольники не пересекаются.*/
         return false;
@@ -1115,7 +1133,7 @@ export const mathHelper = {
 
             if (coincidentPointsCount = vertices01.length) { return true };
         };
-        
+
         return false;
     }
 };
@@ -1250,3 +1268,66 @@ export const mathHelper = {
 //         { x: 4, y: 11 }, { x: 2, y: 14 }, { x: 3, y: 9 }
 //     ]
 // )); // true
+
+
+const point01 = { x: 1350, y: 850 };
+const point02 = { x: 1350, y: 550 };
+const point03 = { x: 1475, y: 850 };
+
+const array01 = [
+    { x: 1500, y: 725 },
+    { x: 1575, y: 775 },
+    { x: 1525, y: 800 },
+    { x: 1475, y: 850 },
+    { x: 1400, y: 800 },
+    { x: 1350, y: 700 },
+    { x: 1400, y: 625 },
+    { x: 1425, y: 550 },
+];
+
+console.log(mathHelper.isPointInsidePolygon(point01, array01)); // false
+console.log(mathHelper.isPointInsidePolygon(point02, array01)); // false
+console.log(mathHelper.isPointInsidePolygon(point03, array01)); // true
+
+const point04 = { x: 1300, y: 850 };
+
+const array02 = [
+    { x: 1500, y: 725 },
+    { x: 1575, y: 775 },
+    { x: 1525, y: 800 },
+    { x: 1475, y: 850 },
+    { x: 1400, y: 800 },
+    { x: 1350, y: 850 }, // !!!
+    { x: 1400, y: 625 },
+    { x: 1425, y: 550 },
+];
+
+console.log(mathHelper.isPointInsidePolygon(point04, array02)); // false
+
+const point05 = { x: 6, y: 8 };
+const array03 = [
+    { x: 3, y: 5 },
+    { x: 12, y: 3 },
+    { x: 10, y: 8 },
+    { x: 9, y: 5 },
+    { x: 7, y: 8 },
+    { x: 6, y: 5 },
+    { x: 4, y: 8 },
+];
+
+console.log(mathHelper.isPointInsidePolygon(point05, array03)); // false
+
+const point06 = { x: 6, y: 8 };
+const array04 = [
+    { x: 3, y: 5 },
+    { x: 15, y: 3 },
+    { x: 13, y: 8 },
+    { x: 12, y: 5 },
+    { x: 10, y: 8 },
+    { x: 9, y: 5 },
+    { x: 7, y: 8 },
+    { x: 6, y: 5 },
+    { x: 4, y: 8 },
+];
+
+console.log(mathHelper.isPointInsidePolygon(point06, array04)); // false

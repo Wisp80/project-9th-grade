@@ -17,21 +17,29 @@ export const game = {
     currentFPS: 0,
     /*Свойство "currentLevel" нужно для хранения текущего номера уровня в игре.*/
     currentLevel: 1,
-    finished: false,
+    finished: false,    
 
-    /*Метод "tick()" занимается подготовкой кадров игры.
-    Метод "tick()" не принимает никаких параметров.
-    Метод "tick()" ничего не возвращает.*/
-    tick: function () {
-        /*Удаляем из памяти предыдущий вызов функции "setTimeout()" при помощи функции "clearTimeout()".*/
-        window.clearTimeout(this.setTimeoutID);
-        /*Подготавливаем данные для следующего кадра при помощи метода "game.prepareDataForNextTick()".*/
-        this.prepareDataForNextTick();
-        /*Отрисовываем подготовленные данные для следующего кадра при помощи метода 
-        "game.renderPreparedDataForNextTick()".*/
-        this.renderPreparedDataForNextTick();
-        /*Запускаем через 1/60 секунды подготовку следующего кадра, тем самым добиваясь 60 кадров в секунду.*/
-        this.setTimeoutID = window.setTimeout(() => { game.tick() }, 1000 / 60);
+    fixedTimeStep: 1000 / 60, // 16.67 мс для 60 FPS
+    accumulatedTime: 0,
+    lastTime: 0,
+    tick: function(timestamp) {
+        // Запланировать следующий кадр
+        requestAnimationFrame((timestamp) => this.tick(timestamp));
+    
+        // Вычислить дельту времени
+        const deltaTime = timestamp - this.lastTime;
+        this.lastTime = timestamp;
+        this.accumulatedTime += deltaTime;
+    
+        // Обновить логику игры несколько раз, если накопилось время
+        while (this.accumulatedTime >= this.fixedTimeStep) {
+            this.prepareDataForNextTick(); // Фиксированный шаг (физика/логика)
+            this.accumulatedTime -= this.fixedTimeStep;
+        }
+    
+        // Рендеринг с интерполяцией (для плавности)
+        const interpolationFactor = this.accumulatedTime / this.fixedTimeStep;
+        this.renderPreparedDataForNextTick(interpolationFactor);
     },
 
     /*Метод "prepareDataForNextTick()" подготавливает данные для следующего кадра.
@@ -177,9 +185,9 @@ players, enemies, rocks, puddles, bullets, bulletIDs
 players.playerOne = new Player(
     100, 400,
     50, 50,
-    10, 0.5,
+    25, 0.5,
     3, 1000,
-    4, '#000000', 2, '#00ffea',
+    5, '#000000', 2, '#00ffea',
     15, 15, 300,
     'player',
     players, enemies, rocks, puddles, bullets, bulletIDs
@@ -198,77 +206,77 @@ bulletOwner, bulletIDs, bullets,
 players, enemies, rocks,
 enemyIDs
 */
-createEnemy(
-    200, 650,
-    150, 200,
-    40,
-    6, 50, 100,
-    8, '#000000', 2, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
+// createEnemy(
+//     200, 650,
+//     150, 200,
+//     40,
+//     6, 50, 100,
+//     8, '#000000', 2, '#ff00d4',
+//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+//     'enemy', bulletIDs, bullets,
+//     players, enemies, rocks,
+//     enemyIDs
+// );
 
-createEnemy(
-    300, 200,
-    200, 150,
-    40,
-    6, 100, 50,
-    8, '#000000', 2, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
+// createEnemy(
+//     300, 200,
+//     200, 150,
+//     40,
+//     6, 100, 50,
+//     8, '#000000', 2, '#ff00d4',
+//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+//     'enemy', bulletIDs, bullets,
+//     players, enemies, rocks,
+//     enemyIDs
+// );
 
-createEnemy(
-    600, 300,
-    150, 200,
-    40,
-    6, 50, 100,
-    8, '#000000', 2, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
+// createEnemy(
+//     600, 300,
+//     150, 200,
+//     40,
+//     6, 50, 100,
+//     8, '#000000', 2, '#ff00d4',
+//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+//     'enemy', bulletIDs, bullets,
+//     players, enemies, rocks,
+//     enemyIDs
+// );
 
-createEnemy(
-    900, 600,
-    200, 150,
-    40,
-    6, 100, 50,
-    8, '#000000', 2, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
+// createEnemy(
+//     900, 600,
+//     200, 150,
+//     40,
+//     6, 100, 50,
+//     8, '#000000', 2, '#ff00d4',
+//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+//     'enemy', bulletIDs, bullets,
+//     players, enemies, rocks,
+//     enemyIDs
+// );
 
-createEnemy(
-    1100, 400,
-    150, 200,
-    40,
-    6, 50, 100,
-    8, '#000000', 2, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
+// createEnemy(
+//     1100, 400,
+//     150, 200,
+//     40,
+//     6, 50, 100,
+//     8, '#000000', 2, '#ff00d4',
+//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+//     'enemy', bulletIDs, bullets,
+//     players, enemies, rocks,
+//     enemyIDs
+// );
 
-createEnemy(
-    1200, 100,
-    200, 150,
-    40,
-    6, 100, 50,
-    8, '#000000', 2, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
+// createEnemy(
+//     1200, 100,
+//     200, 150,
+//     40,
+//     6, 100, 50,
+//     8, '#000000', 2, '#ff00d4',
+//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+//     'enemy', bulletIDs, bullets,
+//     players, enemies, rocks,
+//     enemyIDs
+// );
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
