@@ -206,77 +206,77 @@ bulletOwner, bulletIDs, bullets,
 players, enemies, rocks,
 enemyIDs
 */
-// createEnemy(
-//     200, 650,
-//     150, 200,
-//     40,
-//     6, 50, 100,
-//     8, '#000000', 2, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-//     'enemy', bulletIDs, bullets,
-//     players, enemies, rocks,
-//     enemyIDs
-// );
+createEnemy(
+    200, 650,
+    150, 200,
+    40,
+    6, 50, 100,
+    8, '#000000', 2, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
 
-// createEnemy(
-//     300, 200,
-//     200, 150,
-//     40,
-//     6, 100, 50,
-//     8, '#000000', 2, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-//     'enemy', bulletIDs, bullets,
-//     players, enemies, rocks,
-//     enemyIDs
-// );
+createEnemy(
+    300, 200,
+    200, 150,
+    40,
+    6, 100, 50,
+    8, '#000000', 2, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
 
-// createEnemy(
-//     600, 300,
-//     150, 200,
-//     40,
-//     6, 50, 100,
-//     8, '#000000', 2, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-//     'enemy', bulletIDs, bullets,
-//     players, enemies, rocks,
-//     enemyIDs
-// );
+createEnemy(
+    600, 300,
+    150, 200,
+    40,
+    6, 50, 100,
+    8, '#000000', 2, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
 
-// createEnemy(
-//     900, 600,
-//     200, 150,
-//     40,
-//     6, 100, 50,
-//     8, '#000000', 2, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-//     'enemy', bulletIDs, bullets,
-//     players, enemies, rocks,
-//     enemyIDs
-// );
+createEnemy(
+    900, 600,
+    200, 150,
+    40,
+    6, 100, 50,
+    8, '#000000', 2, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
 
-// createEnemy(
-//     1100, 400,
-//     150, 200,
-//     40,
-//     6, 50, 100,
-//     8, '#000000', 2, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-//     'enemy', bulletIDs, bullets,
-//     players, enemies, rocks,
-//     enemyIDs
-// );
+createEnemy(
+    1100, 400,
+    150, 200,
+    40,
+    6, 50, 100,
+    8, '#000000', 2, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
 
-// createEnemy(
-//     1200, 100,
-//     200, 150,
-//     40,
-//     6, 100, 50,
-//     8, '#000000', 2, '#ff00d4',
-//     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
-//     'enemy', bulletIDs, bullets,
-//     players, enemies, rocks,
-//     enemyIDs
-// );
+createEnemy(
+    1200, 100,
+    200, 150,
+    40,
+    6, 100, 50,
+    8, '#000000', 2, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
@@ -290,7 +290,7 @@ rocks, rockIDs
 createRock(
     300, 350,
     150, 200,
-    'rgba(82, 82, 82, 1)', 'rgba(82, 82, 82, 1)',
+    'rgba(82, 82, 82, 1)', 'rgba(82, 82, 82, 0.820)',
     6, 50, 100,
     rocks, rockIDs
 );
@@ -298,7 +298,7 @@ createRock(
 createRock(
     650, 350,
     150, 200,
-    'rgba(82, 82, 82, 1)', 'rgba(82, 82, 82, 1)',
+    'rgba(82, 82, 82, 1)', 'rgba(82, 82, 82, 0.820)',
     6, 50, 100,
     rocks, rockIDs
 );
@@ -306,7 +306,7 @@ createRock(
 createRock(
     1150, 450,
     600, 600,
-    'rgba(82, 82, 82, 1)', 'rgba(82, 82, 82, 1)',
+    'rgba(82, 82, 82, 1)', 'rgba(82, 82, 82, 0.820)',
     8, 100, 100,
     rocks, rockIDs
 );

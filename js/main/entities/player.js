@@ -316,10 +316,10 @@ export class Player {
                 /*Создаем переменную "horizontalMovementDirection" для хранения горизонтального направления движения 
                 персонажа в следующем кадре.*/
                 let horizontalMovementDirection = null;
-                /*Создаем переменную "predictedHorizontalPathVertices" для хранения массива вершин прямоугольника, 
-                который изображает горизонатальный путь, совершаемый персонажем в следующем кадре. Вершины 
-                прямоугольника в этом массиве начинаются с верхней левой вершины прямоугольника и идут дальше по часовой 
-                стрелке.*/
+                /*Создаем переменную "predictedHorizontalPathVertices" для хранения массива объектов, содержащих 
+                координаты вершин прямоугольника, который изображает горизонатальный путь, совершаемый персонажем в 
+                следующем кадре. Вершины прямоугольника в этом массиве начинаются с верхней левой вершины прямоугольника 
+                и идут дальше по часовой стрелке.*/
                 let predictedHorizontalPathVertices = null;
 
                 /*Если наша текущая скорость персонажа по оси X больше 0, то это означает, что персонаж движется в
@@ -331,23 +331,24 @@ export class Player {
 
                     predictedHorizontalPathVertices = [
                         { x: this.x + this.width, y: this.y },
-                        { x: this.x + this.width + this.currentSpeedX, y: this.y },
-                        { x: this.x + this.width + this.currentSpeedX, y: this.y + this.height },
+                        { x: this.x + this.width + this.speed, y: this.y },
+                        { x: this.x + this.width + this.speed, y: this.y + this.height },
                         { x: this.x + this.width, y: this.y + this.height }
                     ];
                 } else if (this.currentSpeedX < 0) {
                     horizontalMovementDirection = 'left';
 
                     predictedHorizontalPathVertices = [
-                        { x: this.x - Math.abs(this.currentSpeedX), y: this.y },
+                        { x: this.x - this.speed, y: this.y },
                         { x: this.x, y: this.y },
                         { x: this.x, y: this.y + this.height },
-                        { x: this.x - Math.abs(this.currentSpeedX), y: this.y + this.height }
+                        { x: this.x - this.speed, y: this.y + this.height }
                     ];
                 };
 
-                /*Перебираем все камни и проверяем не пересекается ли путь, совершаемый персонажем в следующем кадре,
-                с какими-то камнями. Если есть пересечения, то "выталкиваем" этот путь из пересекаемых камней.*/
+                /*Перебираем все камни и проверяем не пересекается ли горизонтальный путь, совершаемый персонажем в 
+                следующем кадре, с какими-то камнями. Если есть пересечения, то "выталкиваем" этот путь из пересекаемых 
+                камней.*/
                 for (let i = 0; i < this.rocks.length; i++) {
                     while (mathHelper.doTwoPolygonsIntersect(predictedHorizontalPathVertices, this.rocks[i].vertices)) {
                         for (let j = 0; j < predictedHorizontalPathVertices.length; j++) {
@@ -369,9 +370,13 @@ export class Player {
                 };
             };
 
-            /*if we have not changed our raw prediction of next X yet.*/
+            /*Если к этому моменету предсказываемая X-координата не изменялась, проверяем не оказывается ли персонаж 
+            внутри какого-нибудь камня в следующем кадре.*/
             if (!isPredictedXChanged) {
-                /*predict our position.*/
+                /*Создаем переменную "predictedHorizontalPositionVertices" для хранения массива объектов, содержащих 
+                координаты вершин прямоугольника, который изображает позицию персонажа в следующем кадре при 
+                горизонтальном движении. Вершины прямоугольника в этом массиве начинаются с верхней левой вершины 
+                прямоугольника и идут дальше по часовой стрелке.*/
                 const predictedHorizontalPositionVertices = [
                     { x: this.x + this.currentSpeedX, y: this.y },
                     { x: this.x + this.width + this.currentSpeedX, y: this.y },
@@ -379,6 +384,9 @@ export class Player {
                     { x: this.x + this.currentSpeedX, y: this.y + this.height }
                 ];
 
+                /*Перебираем все камни и проверяем не пересекается ли позиция персонажа в следующем кадре при 
+                горизонтальном движении, с какими-то камнями. Если есть пересечения, то "выталкиваем" эту позицию из 
+                пересекаемых камней.*/
                 for (let i = 0; i < this.rocks.length; i++) {
                     while (mathHelper.doTwoPolygonsIntersect(predictedHorizontalPositionVertices, this.rocks[i].vertices)) {
                         for (let j = 0; j < predictedHorizontalPositionVertices.length; j++) {
@@ -389,61 +397,69 @@ export class Player {
                     };
                 };
 
+                /*Получив "безопасную" позицию персонажа в следующем кадре при горизонтальном движении, указываем что
+                ее минимальная X-координата является предсказываемой X-координатой персонажа в следующем кадре.*/
                 nextX = predictedHorizontalPositionVertices[0].x;
             };
         };
 
-        /*if we have changed our raw prediction of next X, then it means that we hit a solid object, so we need to stop.*/
-        if (isPredictedXChanged) { this.currentSpeedX = 0 };
-        if (nextX < 0) { nextX = 0 };
-        if (nextX + this.width > canvasData.canvasWidth) { nextX = canvasData.canvasWidth - this.width };
+        /*Проверяем не получается ли так, что предсказываемая X-координатой персонажа в следующем кадре находится за
+        пределами холста. Если это так, то корректируем ее.*/
+        if (nextX <= 0) { nextX = 1 };
+        if (nextX + this.width >= canvasData.canvasWidth) { nextX = canvasData.canvasWidth - this.width };
+        /*Указываем, что X-координата персонажа в следующем кадре равна полностью откорректированной предсказываемой 
+        X-координате персонажа в следующем кадре.*/
         this.x = nextX;
     };
 
+    /*Метод "moveY()" обрабатывает движение персонажа по оси Y.
+    Метод "moveY()" не принимает никаких параметров.
+    Метод "moveY()" ничего не возвращает.*/
     moveY() {
+        /*Метод "moveY()" работает аналогично, как и метод "moveX()".*/
         let nextY = this.y + this.currentSpeedY;
         let isPredictedYChanged = false;
 
-        if (this.currentSpeedY !== 0) {
+        if (this.currentSpeedY !== 0 && this.rocks.length > 0) {
             if (Math.abs(this.currentSpeedY) > this.height) {
-                let predictedVerticalWayDownVertices = null;
-                let predictedVerticalWayUpVertices = null;
+                let verticalMovementDirection = null;
+                let predictedVerticalPathVertices = null;
 
                 if (this.currentSpeedY > 0) {
-                    predictedVerticalWayDownVertices = [
+                    verticalMovementDirection = 'down';
+
+                    predictedVerticalPathVertices = [
                         { x: this.x, y: this.y + this.height },
                         { x: this.x + this.width, y: this.y + this.height },
-                        { x: this.x + this.width, y: this.y + this.height + this.currentSpeedY },
-                        { x: this.x, y: this.y + this.height + this.currentSpeedY }
+                        { x: this.x + this.width, y: this.y + this.height + this.speed },
+                        { x: this.x, y: this.y + this.height + this.speed }
                     ];
-                };
+                } else if (this.currentSpeedY < 0) {
+                    verticalMovementDirection = 'up';
 
-                if (this.currentSpeedY < 0) {
-                    predictedVerticalWayUpVertices = [
-                        { x: this.x, y: this.y - Math.abs(this.currentSpeedY) },
-                        { x: this.x + this.width, y: this.y - Math.abs(this.currentSpeedY) },
+                    predictedVerticalPathVertices = [
+                        { x: this.x, y: this.y - this.speed },
+                        { x: this.x + this.width, y: this.y - this.speed },
                         { x: this.x + this.width, y: this.y },
                         { x: this.x, y: this.y }
                     ];
                 };
 
-                let chosenPredictedWayVertices = predictedVerticalWayDownVertices
-                    ? predictedVerticalWayDownVertices
-                    : predictedVerticalWayUpVertices;
-
                 for (let i = 0; i < this.rocks.length; i++) {
-                    while (mathHelper.doTwoPolygonsIntersect(chosenPredictedWayVertices, this.rocks[i].vertices)) {
-                        for (let j = 0; j < chosenPredictedWayVertices.length; j++) {
-                            chosenPredictedWayVertices[j].y -= Math.sign(this.currentSpeedY);
+                    while (mathHelper.doTwoPolygonsIntersect(predictedVerticalPathVertices, this.rocks[i].vertices)) {
+                        for (let j = 0; j < predictedVerticalPathVertices.length; j++) {
+                            predictedVerticalPathVertices[j].y -= Math.sign(this.currentSpeedY);
                         };
 
                         isPredictedYChanged = true;
                     };
                 };
 
-                nextY = predictedVerticalWayDownVertices
-                    ? predictedVerticalWayDownVertices[3].y - this.height
-                    : predictedVerticalWayUpVertices[0].y;
+                if (verticalMovementDirection === 'down') {
+                    nextY = predictedVerticalPathVertices[3].y - this.height;
+                } else if (verticalMovementDirection === 'up') {
+                    nextY = predictedVerticalPathVertices[0].y;
+                };
             };
 
             if (!isPredictedYChanged) {
@@ -468,28 +484,44 @@ export class Player {
             };
         };
 
-        if (isPredictedYChanged) { this.currentSpeedY = 0 };
-        if (nextY < 0) { nextY = 0 };
-        if (nextY + this.height > canvasData.canvasHeight) { nextY = canvasData.canvasHeight - this.height };
+        if (nextY <= 0) { nextY = 1 };
+        if (nextY + this.height >= canvasData.canvasHeight) { nextY = canvasData.canvasHeight - this.height };
         this.y = nextY;
     };
 
-    move() {
-        this.moveX();
-        this.moveY();
-
-        const playerVertices = [
+    /*Метод "findCurrentPlayerVertices()" определяет вершины текущей прямоугольной позиции персонажа.
+    Метод "findCurrentPlayerVertices()" не принимает никаких параметров.
+    Метод "findCurrentPlayerVertices()" возвращает массив объектов, содержащих координаты вершин текущей прямоугольной 
+    позиции персонажа.*/
+    findCurrentPlayerVertices() {
+        return [
             { x: this.x, y: this.y },
             { x: this.x + this.width, y: this.y },
             { x: this.x + this.width, y: this.y + this.height },
             { x: this.x, y: this.y + this.height }
         ];
+    };
 
+    /*Метод "loseHealthPoints()" понижает здоровье персонажа на 1.
+    Метод "loseHealthPoints()" не принимает никаких параметров.
+    Метод "loseHealthPoints()" ничего не возвращает.*/
+    loseHealthPoints() { if (this.healthPoints > 0) { this.healthPoints-- } };
+
+    /*Метод "takeDamageIfTouchedByEnemy()" понижает здоровье персонажа на 1, если персонаж касается врага.
+    Метод "takeDamageIfTouchedByEnemy()" не принимает никаких параметров.
+    Метод "takeDamageIfTouchedByEnemy()" ничего не возвращает.*/
+    takeDamageIfTouchedByEnemy() {
+        /*Находим массив объектов, содержащих координаты вершин текущей прямоугольной позиции персонажа, при помощи 
+        метода "findCurrentPlayerVertices()".*/
+        const playerVertices = this.findCurrentPlayerVertices();
+
+        /*Перебираем все врагов и проверяем не касается ли персонаж кого-то из них. Если это так, то персонаж теряет 
+        одно очко здоровья при помощи метода "loseHealthPoints()".*/
         for (let i = 0; i < this.enemies.length; i++) {
             if (mathHelper.doTwoPolygonsIntersect(playerVertices, this.enemies[i].vertices)) {
                 if (!this.tookDamageRecently) {
                     this.tookDamageRecently = true;
-                    this.healthPoints--;
+                    this.loseHealthPoints();
 
                     const setTimeoutID = setTimeout(
                         () => {
@@ -501,6 +533,17 @@ export class Player {
                 };
             };
         };
+    };
+
+    /*Метод "move()" совмещает вызовы методов "moveX()", "moveY()" и "takeDamageIfTouchedByEnemy()", дополнительно 
+    проверяя не находится ли персонаж в луже.
+    Метод "move()" не принимает никаких параметров.
+    Метод "move()" ничего не возвращает.*/
+    move() {
+        this.moveX();
+        this.moveY();
+        this.takeDamageIfTouchedByEnemy();
+        const playerVertices = this.findCurrentPlayerVertices();
 
         for (let i = 0; i < this.puddles.length; i++) {
             if (mathHelper.doTwoPolygonsIntersect(playerVertices, this.puddles[i].vertices)) {
@@ -512,9 +555,14 @@ export class Player {
         this.slowed = false;
     };
 
+    /*Метод "draw()" отрисовыввает персонажа.
+    Метод "draw()" не принимает никаких параметров.
+    Метод "draw()" ничего не возвращает.*/
     draw() {
-        const angle = (game.ticks % 360) * Math.PI / 180; // Переводим градусы в радианы
-        const length = Math.sqrt(this.width * this.width + this.height * this.height); // Длина градиента
+        // Переводим градусы в радианы
+        const angle = (game.ticks % 360) * Math.PI / 180;
+        // Длина градиента
+        const length = Math.sqrt(this.width * this.width + this.height * this.height);
 
         // Вычисляем новые координаты для градиента (чтобы он вращался)
         const gradientX1 = this.x + this.width / 2 + Math.cos(angle) * length / 2;
@@ -525,9 +573,9 @@ export class Player {
         // Создаем градиент с новыми координатами
         const gradient = ctx.createLinearGradient(gradientX1, gradientY1, gradientX2, gradientY2);
 
-
+        // Используем остаток от деления, чтобы hue был в диапазоне 0-359
+        const hue = (game.ticks % 360);
         // Добавляем цветовые остановки (от 0 до 1)
-        const hue = (game.ticks % 360); // Используем остаток от деления, чтобы hue был в диапазоне 0-359
         gradient.addColorStop(0, `hsl(${hue}, 100%, 50%)`);
         gradient.addColorStop(0.1, `hsl(${(hue + 10) % 360}, 100%, 50%)`);
         gradient.addColorStop(0.2, `hsl(${(hue + 20) % 360}, 100%, 50%)`);
@@ -546,28 +594,15 @@ export class Player {
         // Рисуем прямоугольник
         ctx.fillRect(this.x, this.y, this.width, this.height);
 
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = 'lime';
-        ctx.strokeRect(this.x + this.speed, this.y, this.width, this.height);
-
         // ctx.lineWidth = 1;
         // ctx.strokeStyle = 'lime';
+        // ctx.strokeRect(this.x + this.speed, this.y, this.width, this.height);
         // ctx.strokeRect(this.x - this.speed, this.y, this.width, this.height);
-
-        // ctx.lineWidth = 1;
-        // ctx.strokeStyle = 'lime';
         // ctx.strokeRect(this.x, this.y - this.speed, this.width, this.height);
-
-        // ctx.lineWidth = 1;
-        // ctx.strokeStyle = 'lime';
         // ctx.strokeRect(this.x, this.y + this.speed, this.width, this.height);
 
-        // ctx.lineWidth = 1;
         // ctx.strokeStyle = '#00c3ff';
         // ctx.strokeRect(this.x + this.width, this.y, this.speed, this.height);
-
-        // ctx.lineWidth = 1;
-        // ctx.strokeStyle = '#00c3ff';
         // ctx.strokeRect(this.x - this.speed, this.y, this.speed, this.height);
     };
 };

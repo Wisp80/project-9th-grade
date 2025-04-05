@@ -5,14 +5,15 @@ export const graphicsHelper = {
     /*Метод "drawPolygonFromVertices()" отрисовывает многоугольник на основе координат вершин.
     
     Метод "drawPolygonFromVertices()" принимает следующие параметры:
-    1. "vertices" - это параметр в виде массива объектов, содержащих координаты вершин многоугольника.
+    1. "vertices" - это параметр в виде массива объектов, содержащих координаты вершин многоугольника. Вершины 
+    многоугольника должны быть указаны в последовательном порядке.
     2. "lineWidth" - это числовой параметр, указывающий толщину обводки многоугольника.
     3. "strokeStyle" - это строковой параметр, указывающий стиль обводки многоугольника.
     4. "fillStyle" - это строковой параметр, указывающий стиль заливки многоугольника.
     
     Метод "drawPolygonFromVertices()" ничего не возвращает.*/
     drawPolygonFromVertices: function (vertices, lineWidth, strokeStyle, fillStyle) {
-        /*Рассчитываем путь для многоугольника.*/
+        /*Создаем путь для отрисовки многоугольника.*/
         ctx.beginPath();
         const region = new Path2D();
 
@@ -20,21 +21,17 @@ export const graphicsHelper = {
             ctx.lineTo(vertices[i].x, vertices[i].y);
             region.lineTo(vertices[i].x, vertices[i].y);
 
-            /*Отрисовываем клетки из каждой вершины многоугольника. Это нужно только для тестирования.*/
-            // ctx.fillStyle = 'rgb(100, 210, 70)';
-            // ctx.fillRect(vertices[i].x, vertices[i].y, canvasData.cellWidth, canvasData.cellHeight);
-
             /*Отрисовываем вершины многоугольника. Это нужно только для тестирования.*/
             // ctx.lineWidth = 3;
             // ctx.strokeStyle = 'lime';
             // ctx.strokeRect(vertices[i].x, vertices[i].y, canvasData.cellWidth / 5, canvasData.cellHeight / 5);
 
             /*Отрисовываем номера вершин многоугольника. Это нужно только для тестирования.*/
-            ctx.fillStyle = 'black';
-            ctx.font = '30px serif';
-            ctx.fillText(i + 1, vertices[i].x + 5, vertices[i].y - 5);
+            // ctx.fillStyle = 'black';
+            // ctx.font = '30px serif';
+            // ctx.fillText(i + 1, vertices[i].x + 5, vertices[i].y - 5);
         };
-
+        
         ctx.closePath();
 
         /*Обводим многоугольник.*/
