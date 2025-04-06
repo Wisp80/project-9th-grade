@@ -3,4 +3,4 @@ import { controls } from './main/controls.js';
 import { game } from './main/game.js';
 
 window.onload = function () { controls.initializePlayersControlsListening() };
-requestAnimationFrame((timestamp) => game.tick(timestamp));
+requestAnimationFrame((timestamp) => { game.gameLoop(timestamp) });

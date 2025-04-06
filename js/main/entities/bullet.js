@@ -13,6 +13,10 @@ class Bullet {
     ) {
         this.x = x;
         this.y = y;
+        /*X-координата персонажа в предыдущем кадре.*/
+        this.previousX;
+        /*Y-координата персонажа в предыдущем кадре.*/
+        this.previousY;
         this.radius = radius;
         this.strokeStyle = strokeStyle;
         this.lineWidth = lineWidth;
@@ -49,11 +53,15 @@ class Bullet {
     };
 
     moveX() {
+        /*Сохраняем предыдущую X-координуту персонажа. Это нужно для отрисовки персонажа с учетом интерполяции.*/
+        this.previousX = this.x;
         let nextX = this.x + this.currentSpeedX;
         this.x = nextX;
     };
 
     moveY() {
+        /*Метод "moveY()" работает аналогично, как и метод "moveX()".*/
+        this.previousY = this.y;
         let nextY = this.y + this.currentSpeedY;
         this.y = nextY;
     };
@@ -107,9 +115,12 @@ class Bullet {
         };
     };
 
-    draw() {
+    draw(interpolationFactor) {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI); // Параметры: x, y, радиус, начальный угол, конечный угол
+        // ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI); // Параметры: x, y, радиус, начальный угол, конечный угол
+        const x = this.previousX + (this.x - this.previousX) * interpolationFactor;
+        const y = this.previousY + (this.y - this.previousY) * interpolationFactor;
+        ctx.arc(x, y, this.radius, 0, 2 * Math.PI); // Параметры: x, y, радиус, начальный угол, конечный угол
         ctx.strokeStyle = this.strokeStyle;
         ctx.lineWidth = this.lineWidth;
         ctx.stroke();

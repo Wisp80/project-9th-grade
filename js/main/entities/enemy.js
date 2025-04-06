@@ -36,6 +36,8 @@ class Enemy {
             true
         );
 
+        this.previousVertices = [];
+
         this.bulletRadius = bulletRadius;
         this.bulletStrokeStyle = bulletStrokeStyle;
         this.bulletLineWidth = bulletLineWidth;
@@ -68,7 +70,9 @@ class Enemy {
     };
 
     move() {
-        if (game.ticks % 10 === 0) {
+        this.previousVertices = this.vertices;
+
+        if (game.totalCalculatedFrames % 20 === 0) {
             this.moveX();
             this.moveY();
 
@@ -158,7 +162,7 @@ class Enemy {
         };
     };
 
-    draw() {
+    draw(interpolationFactor) {
         // ctx.lineWidth = 1;
         // ctx.strokeStyle = 'red';
         // ctx.strokeRect(this.x, this.y, this.width, this.height);
@@ -172,9 +176,21 @@ class Enemy {
             'rgba(48, 48, 44, 0.6)'
         ];
 
-        if (game.ticks % 10 === 0) { this.color = colors[mathHelper.getRandomIntFromInterval(0, colors.length - 1)] };
+        if (game.totalCalculatedFrames % 20 === 0) { this.color = colors[mathHelper.getRandomIntFromInterval(0, colors.length - 1)] };
 
-        graphicsHelper.drawPolygonFromVertices(this.vertices, 1, 'yellow', this.color);
+        const verticesForInterpolation = [];
+
+        for (let i = 0; i < this.vertices.length; i++) {
+            verticesForInterpolation.push(
+                {
+                    x: this.previousVertices[i].x + (this.vertices[i].x - this.previousVertices[i].x) * interpolationFactor,
+                    y: this.previousVertices[i].y + (this.vertices[i].y - this.previousVertices[i].y) * interpolationFactor
+                }
+            );
+        };
+
+        // graphicsHelper.drawPolygonFromVertices(this.vertices, 1, 'yellow', this.color);
+        graphicsHelper.drawPolygonFromVertices(verticesForInterpolation, 1, 'yellow', this.color);
     };
 };
 

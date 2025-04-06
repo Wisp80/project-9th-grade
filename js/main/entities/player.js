@@ -4,7 +4,6 @@ import { controls } from '../controls.js';
 import { mathHelper } from '../../helpers/mathHelper.js';
 import { game } from '../game.js';
 import { createBullet } from './bullet.js';
-import { graphicsHelper } from '../../helpers/graphicsHelper.js';
 
 export class Player {
     constructor(
@@ -21,6 +20,10 @@ export class Player {
         this.x = x;
         /*Y-координата персонажа.*/
         this.y = y;
+        /*X-координата персонажа в предыдущем кадре.*/
+        this.previousX;
+        /*Y-координата персонажа в предыдущем кадре.*/
+        this.previousY;
         /*Ширина персонажа.*/
         this.width = width;
         /*Высота персонажа.*/
@@ -297,6 +300,8 @@ export class Player {
     Метод "moveX()" не принимает никаких параметров.
     Метод "moveX()" ничего не возвращает.*/
     moveX() {
+        /*Сохраняем предыдущую X-координуту персонажа. Это нужно для отрисовки персонажа с учетом интерполяции.*/
+        this.previousX = this.x;
         /*Создаем переменную "nextX" для хранения X-координаты персонажа в следующем кадре, которую "предсказываем" в 
         ходе работы этого метода. Изначально эта X-координата равна текущей X-координате увеличенной на текущую скорость 
         персонажа по оси X.*/
@@ -417,6 +422,7 @@ export class Player {
     Метод "moveY()" ничего не возвращает.*/
     moveY() {
         /*Метод "moveY()" работает аналогично, как и метод "moveX()".*/
+        this.previousY = this.y;
         let nextY = this.y + this.currentSpeedY;
         let isPredictedYChanged = false;
 
@@ -556,11 +562,15 @@ export class Player {
     };
 
     /*Метод "draw()" отрисовыввает персонажа.
-    Метод "draw()" не принимает никаких параметров.
+
+    Метод "draw()" принимает следующие параметры:
+    1. "interpolationFactor" - это числовой параметр, указывающий коэффициет интерполяции для создания промежуточных 
+    кадров с целью осуществления плавной отрисовки при движении.
+
     Метод "draw()" ничего не возвращает.*/
-    draw() {
+    draw(interpolationFactor) {
         // Переводим градусы в радианы
-        const angle = (game.ticks % 360) * Math.PI / 180;
+        const angle = (game.totalCalculatedFrames % 360) * Math.PI / 180;
         // Длина градиента
         const length = Math.sqrt(this.width * this.width + this.height * this.height);
 
@@ -574,7 +584,7 @@ export class Player {
         const gradient = ctx.createLinearGradient(gradientX1, gradientY1, gradientX2, gradientY2);
 
         // Используем остаток от деления, чтобы hue был в диапазоне 0-359
-        const hue = (game.ticks % 360);
+        const hue = (game.totalCalculatedFrames % 360);
         // Добавляем цветовые остановки (от 0 до 1)
         gradient.addColorStop(0, `hsl(${hue}, 100%, 50%)`);
         gradient.addColorStop(0.1, `hsl(${(hue + 10) % 360}, 100%, 50%)`);
@@ -588,11 +598,19 @@ export class Player {
         gradient.addColorStop(0.9, `hsl(${(hue + 110) % 360}, 100%, 50%)`);
         gradient.addColorStop(1, `hsl(${(hue + 120) % 360}, 100%, 50%)`);
 
-        // Устанавливаем градиент как заливку
+        /*Устанавливаем градиент как цвет заливки.*/ 
         ctx.fillStyle = gradient;
 
-        // Рисуем прямоугольник
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        /*Рассчитываем X-коорданту и Y-координату персонажа для отрисовки с учетом интерполяции по формуле:
+        previousFrameX + (currentFrameX - previousFrameX) * interpolationFactor. Интерполяция нужна для создания 
+        промежуточных кадров, которые добавляют плавности движению.*/
+        const x = this.previousX + (this.x - this.previousX) * interpolationFactor;
+        const y = this.previousY + (this.y - this.previousY) * interpolationFactor;
+        /*Рисуем персонажа в виде прямоугольника с учетом интерполяции.*/ 
+        ctx.fillRect(x, y, this.width, this.height);
+
+        /*Рисуем персонажа в виде прямоугольника без учета интерполяции.*/ 
+        // ctx.fillRect(this.x , this.y, this.width, this.height);
 
         // ctx.lineWidth = 1;
         // ctx.strokeStyle = 'lime';
