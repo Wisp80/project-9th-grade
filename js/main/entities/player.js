@@ -569,48 +569,82 @@ export class Player {
 
     Метод "draw()" ничего не возвращает.*/
     draw(interpolationFactor) {
-        // Переводим градусы в радианы
+        /*Остаток от деления числа на 360 всегда будет в диапозоне от 0 до 359. При помощи этого мы на основе количества 
+        рассчитанных кадров за всю игру получаем градусы. Мы переводим полученные градусы в радианы, так как дальше мы 
+        используем методы "Math.cos()" и "Math.sin()", использующие радианы в качестве параметров. Чтобы 
+        получить радианы умножаем градусы на "(π / 180)".*/
         const angle = (game.totalCalculatedFrames % 360) * Math.PI / 180;
-        // Длина градиента
+
+        /*В контексте функции "createLinearGradient()" длина градиента - это расстояние между начальной и конечной 
+        точками градиента. Градиент будет плавно перетекать от цвета к цвету вдоль этой линии. Если линия короткая, то 
+        цвета резко сменяются, а если длинная, то переход между цветами плавный. В нашем коде градиент вращается вокруг 
+        центра, поэтому его длина должна быть не меньше максимально возможного расстояния внутри прямоугольной области 
+        персонажа, то есть диагонали прямоугольника, чтобы при любом угле градиент полностью покрывал фигуру. Поэтому 
+        находим длину диагонали прямоугольной области персонажа по теореме Пифагора.*/
         const length = Math.sqrt(this.width * this.width + this.height * this.height);
 
-        // Вычисляем новые координаты для градиента (чтобы он вращался)
-        const gradientX1 = this.x + this.width / 2 + Math.cos(angle) * length / 2;
-        const gradientY1 = this.y + this.height / 2 + Math.sin(angle) * length / 2;
-        const gradientX2 = this.x + this.width / 2 - Math.cos(angle) * length / 2;
-        const gradientY2 = this.y + this.height / 2 - Math.sin(angle) * length / 2;
+        /*Рассчитываем конечные точки градиента. Эти точки мы рассчитываем из центра прямоугольной области прибавляя или
+        вычитая половину длины диагонали этой прямоугольной области, чтобы в итоге получалась целая диагональ. 
+        
+        Если отрисовывать градиент, используя такие точки, то будем получать градиент строго по диагонали. А нам нужно,
+        чтобы эта диагональ постоянно смещалась по кругу. Поэтому нужно умножать половину длины диагонали прямоугольной
+        области персонажа на какой-то коэффициент смещения. Известно, что для любого угла его косинус говорит, насколько 
+        двигаться по оси X, а его синус говорит, насколько двигаться по оси Y. Соответственно, умножаем половину длины
+        диагонали прямоугольной области персонажа на косинус угла, когда рассчитываем X-координаты, и на синус угла, 
+        когда рассчитываем Y-координаты.*/
+        const centerX = this.x + this.width / 2;
+        const centerY = this.y + this.height / 2;
+        const cosAngle = Math.cos(angle);
+        const sinAngle = Math.sin(angle);
+        const gradientX1 = centerX + (length / 2) * cosAngle;
+        const gradientY1 = centerY + (length / 2) * sinAngle;
+        const gradientX2 = centerX - (length / 2) * cosAngle;
+        const gradientY2 = centerY - (length / 2) * sinAngle;
 
-        // Создаем градиент с новыми координатами
+        /*Создаем градиент, используя рассчитанные конечные точки.*/
         const gradient = ctx.createLinearGradient(gradientX1, gradientY1, gradientX2, gradientY2);
 
-        // Используем остаток от деления, чтобы hue был в диапазоне 0-359
-        const hue = (game.totalCalculatedFrames % 360);
-        // Добавляем цветовые остановки (от 0 до 1)
-        gradient.addColorStop(0, `hsl(${hue}, 100%, 50%)`);
-        gradient.addColorStop(0.1, `hsl(${(hue + 10) % 360}, 100%, 50%)`);
-        gradient.addColorStop(0.2, `hsl(${(hue + 20) % 360}, 100%, 50%)`);
-        gradient.addColorStop(0.3, `hsl(${(hue + 35) % 360}, 100%, 50%)`);
-        gradient.addColorStop(0.4, `hsl(${(hue + 45) % 360}, 100%, 50%)`);
-        gradient.addColorStop(0.5, `hsl(${(hue + 60) % 360}, 100%, 50%)`);
-        gradient.addColorStop(0.6, `hsl(${(hue + 70) % 360}, 100%, 50%)`);
-        gradient.addColorStop(0.7, `hsl(${(hue + 85) % 360}, 100%, 50%)`);
-        gradient.addColorStop(0.8, `hsl(${(hue + 95) % 360}, 100%, 50%)`);
-        gradient.addColorStop(0.9, `hsl(${(hue + 110) % 360}, 100%, 50%)`);
-        gradient.addColorStop(1, `hsl(${(hue + 120) % 360}, 100%, 50%)`);
+        /*Hue (оттенок) - это компонент цветовой модели HSL (Hue, Saturation, Lightness), который определяет цвет на 
+        цветовом круге в градусах: 0° - красный, 120° - зеленый, 240° - синий, 360° - снова красный. Высчитываем hue на
+        основе рассчитанных кадров за всю игру.*/
+        const hue = game.totalCalculatedFrames % 360;
+        const saturation = 50;
+        const lightness = 50;
+        /*Добавляем цветовые остановки (от 0 до 1). Цветовые остановки - это точки, где градиент меняет один цвет на 
+        другой.*/
+        gradient.addColorStop(0, `hsl(${hue}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.1, `hsl(${(hue + 10) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.2, `hsl(${(hue + 20) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.3, `hsl(${(hue + 35) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.4, `hsl(${(hue + 45) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.5, `hsl(${(hue + 60) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.6, `hsl(${(hue + 70) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.7, `hsl(${(hue + 85) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.8, `hsl(${(hue + 95) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.9, `hsl(${(hue + 110) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(1, `hsl(${(hue + 120) % 360}, ${saturation}%, ${lightness}%)`);
 
-        /*Устанавливаем градиент как цвет заливки.*/ 
-        ctx.fillStyle = gradient;
+        /*Устанавливаем цвет заливки.*/
+        ctx.fillStyle = 'rgba(50, 65, 62, 0.527)';
+        /*Устанавливаем градиент как цвет линии обводки.*/
+        ctx.strokeStyle = gradient;
+        /*Устанавливаем ширину линии обводки.*/
+        ctx.lineWidth = 4;
 
         /*Рассчитываем X-коорданту и Y-координату персонажа для отрисовки с учетом интерполяции по формуле:
         previousFrameX + (currentFrameX - previousFrameX) * interpolationFactor. Интерполяция нужна для создания 
         промежуточных кадров, которые добавляют плавности движению.*/
         const x = this.previousX + (this.x - this.previousX) * interpolationFactor;
         const y = this.previousY + (this.y - this.previousY) * interpolationFactor;
-        /*Рисуем персонажа в виде прямоугольника с учетом интерполяции.*/ 
+        /*Рисуем персонажа в виде прямоугольника с учетом интерполяции.*/
         ctx.fillRect(x, y, this.width, this.height);
+        /*Обводим персонажа с учетом интерполяции.*/
+        ctx.strokeRect(x, y, this.width, this.height)
 
-        /*Рисуем персонажа в виде прямоугольника без учета интерполяции.*/ 
+        /*Рисуем персонажа в виде прямоугольника без учета интерполяции.*/
         // ctx.fillRect(this.x , this.y, this.width, this.height);
+        /*Обводим персонажа без учета интерполяции.*/
+        // ctx.strokeRect(this.x , this.y, this.width, this.height);
 
         // ctx.lineWidth = 1;
         // ctx.strokeStyle = 'lime';
