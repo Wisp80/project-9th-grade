@@ -1,5 +1,6 @@
 'use strict';
 import { ctx, canvasData } from '../canvas/canvas.js';
+import { generalHelper } from './generalHelper.js';
 
 export const mathHelper = {
     /*Метод "getRandomIntFromInterval()" генерирует случайное целое число в указанном пределе.
@@ -444,7 +445,7 @@ export const mathHelper = {
 
         /*Отрисовываем найденные точки. Это нужно только для тестирования.*/
         // for (let i = 0; i < points.length; i++) {
-        //     ctx.fillStyle = helper.getRandomColor();
+        //     ctx.fillStyle = generalHelper.getRandomColor();
         //     ctx.fillRect(points[i].x, points[i].y, 5, 5);
         // };
 

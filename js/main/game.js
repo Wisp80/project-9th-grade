@@ -9,35 +9,36 @@ import { createPuddle } from './entities/puddle.js';
 
 /*Объект "game" представляет из себя главный объект игры, обрабатывающий все данные игры.*/
 export const game = {
-    rafID: null,
     /*Свойство "totalCalculatedFrames" нужно для хранения количества рассчитанных кадров за всю игру.*/
     totalCalculatedFrames: 0,
-    /*Свойство "calculatedFramesForLastSecond" нужно для хранения количества рассчитанных кадров за последнюю секунду.*/
+    /*Свойство "calculatedFramesForLastSecond" нужно для хранения количества рассчитанных кадров за последнюю секунду.
+    Это свойство используется для рассчета FPS для рассчитанных кадров.*/
     calculatedFramesForLastSecond: 0,
-    /*Свойство "currentCalculatedFPS" нужно для хранения текущего значения FPS для рассчитанных кадров.*/
-    currentCalculatedFPS: 0,
-    /*Свойство "lastCalculatedFPSTime" нужно для хранения времени, когда последний раз расчитывался FPS для рассчитанных 
-    кадров.*/
-    lastCalculatedFPSTime: 0,
+    /*Свойство "lastCalculatedFramesFPSTime" нужно для хранения времени, когда последний раз расчитывался FPS для 
+    рассчитанных кадров. Это свойство используется для рассчета FPS для рассчитанных кадров.*/
+    lastCalculatedFramesFPSTime: 0,
+    /*Свойство "calculatedFramesFPS" нужно для хранения текущего значения FPS для рассчитанных кадров.*/
+    calculatedFramesFPS: 0,
 
     /*Свойство "totalRenderedFrames" нужно для хранения количества отрисованных кадров за всю игру.*/
     totalRenderedFrames: 0,
-    /*Свойство "renderedFramesForLastSecond" нужно для хранения количества отрисованных кадров за последнюю секунду.*/
+    /*Свойство "renderedFramesForLastSecond" нужно для хранения количества отрисованных кадров за последнюю секунду. 
+    Это свойство используется для рассчета FPS для отрисованных кадров.*/
     renderedFramesForLastSecond: 0,
-    /*Свойство "currentRenderedFPS" нужно для хранения текущего значения FPS для отрисованных кадров.*/
-    currentRenderedFPS: 0,
-    /*Свойство "lastRenderedFPSTime" нужно для хранения времени, когда последний раз расчитывался FPS для отрисованных 
-    кадров.*/
-    lastRenderedFPSTime: 0,
+    /*Свойство "lastRenderedFramesFPSTime" нужно для хранения времени, когда последний раз расчитывался FPS для 
+    отрисованных кадров. Это свойство используется для рассчета FPS для рассчитанных кадров.*/
+    lastRenderedFramesFPSTime: 0,
+    /*Свойство "renderedFramesFPS" нужно для хранения текущего значения FPS для отрисованных кадров.*/
+    renderedFramesFPS: 0,
 
     /*Свойство "currentLevel" нужно для хранения текущего номера уровня в игре.*/
     currentLevel: 1,
     finished: false,
 
-    /*Свойство "fixedTimeStep" нужно для хранения фиксированного временного шага для расчета логики игры в 60 FPS. Этим 
-    свойством мы указываем, чтобы данные для кадров рассчитывались не чаще, чем 60 раз в секунду, то есть на рассчет 
-    данных для одного кадра должно уходить не меньше ≈16.67 милисекунд. При этом отрисовка рассчитанных данных для 
-    кадров не ограничивается этим свойством.*/
+    /*Свойство "fixedTimeStep" нужно для хранения фиксированного временного шага для расчета данных для кадров игры в 60 
+    FPS. Этим свойством мы указываем, чтобы данные для кадров рассчитывались не чаще, чем 60 раз в секунду, то есть на 
+    рассчет данных для одного кадра должно уходить не меньше ≈16.67 милисекунд. При этом отрисовка рассчитанных данных 
+    для кадров не ограничивается этим свойством.*/
     fixedTimeStep: 1000 / 60,
     /*Свойство "currentFrameSteps" нужно для хранения значения, которое обозначает сколько кадров было рассчитано за 
     время текущего вызова метода "gameLoop()".*/
@@ -45,12 +46,16 @@ export const game = {
     /*Свойство "maxStepsPerFrame" нужно для хранения значения, которое обозначает сколько кадров может быть максимально 
     рассчитано за время одного вызов метода "gameLoop()".*/
     maxStepsPerFrame: 5,
-    /*Свойство "accumulatedTimeForCalculatingFrames" нужно для хранения значения, которое обозначает время, накопленное
-    для рассчета данных для кадров, то есть время, накопленное между всеми вызовами метода "gameLoop()".*/
-    accumulatedTimeForCalculatingFrames: 0,
+    /*Свойство "accumulatedTimeForCalculatingFrameData" нужно для хранения значения, которое обозначает время, 
+    накопленное для рассчета данных для кадров, то есть время, накопленное между всеми вызовами метода "gameLoop()".*/
+    accumulatedTimeForCalculatingFrameData: 0,
     /*Свойство "lastRenderedFrameTime" нужно для хранения значения, которое обозначает время, когда последний раз были
-    рассчитаны данные для кадра, то есть время последнего вызова метода "gameLoop()".*/
+    отрисованы данные для кадра, то есть время последнего вызова метода "gameLoop()".*/
     lastRenderedFrameTime: 0,
+    /*Множитель для рассчета локальной переменной "maxDeltaTime" в метода "gameLoop()".*/
+    maxDeltaTimeMultiplier: 30,
+    /*Свойство "frameInterpolation" содержит флаг для указания использовать ли интерполяцию кадров или нет.*/
+    frameInterpolation: true,
 
     /*Метод "gameLoop()" занимается обробаткой цикла игры.
 
@@ -65,13 +70,13 @@ export const game = {
         Функция "requestAnimationFrame()" вызывает переданную в нее callback-функцию однократно перед следующим 
         обновлением экрана. Если функция "requestAnimationFrame()" вызывается рекурсивно, то это означает, что 
         переданная в нее callback-функцию будет вызываться равное частоте обновления монитора раз в секунду, при этом 
-        браузер будет стараться синхронизировать функцию "requestAnimationFrame()" с вертикальным синхросигналом (VSync) 
+        браузер будет стараться синхронизировать функцию "requestAnimationFrame()" с вертикальной синхронизацией 
         монитора, чтобы избежать "разрыва кадров". Также если вкладка неактивна или страница не видна, то браузер будет 
         замедлять или останавливать функцию "requestAnimationFrame()", обычно до 1-10 FPS.
         
         Когда функция "requestAnimationFrame()" вызывает переданную в нее callback-функцию, она передает в эту 
         callback-функцию параметр (в нашем случае это переменная "timestamp"), обозначающий время вызова этой 
-        callback-функции в милисекундах, то есть время в миллисекундах с момента загрузки страницы с точностью до 
+        callback-функции в милисекундах, а точнее время в миллисекундах с момента загрузки страницы с точностью до 
         микросекунд.
         
         Для генерации кадров функция "requestAnimationFrame()" подходит лучше, чем функция "setTimeout()" по следующим
@@ -83,41 +88,53 @@ export const game = {
         4. Функция "setTimeout()" не имеет доступа к времени рендеринга.
         5. Функция "setTimeout()" при нагрузке вызывает лавинообразное накопление отложенных вызовов.
         6. Функция "setTimeout()" не останавливается при скрытии вкладки или минимизации окна, то есть продолжает 
-        тратить ресурсы.*/
-        this.rafID = requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
+        тратить ресурсы.
+        
+        Рекурсивно вызываем функцию "requestAnimationFrame()", которая будет рекурсивно вызывать метод "gameLoop()", что
+        приведит к бесконченому запуску циклов игры.*/
+        requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
+
         /*Рассчитываем текущее значение FPS для отрисованных кадров при помощи метода "updateRenderedFPS()".*/
         this.updateRenderedFPS(timestamp);
+
         /*Высчитываем сколько прошло времени с последнего вызова метода "gameLoop()" и сохраняем результат в переменную 
         "deltaTime".*/
         let deltaTime = timestamp - this.lastRenderedFrameTime;
+
         /*Создаем переменную "maxDeltaTime" для хранения ограничения для значения в переменной "deltaTime".*/
-        const maxDeltaTime = 30 * this.fixedTimeStep;
+        const maxDeltaTime = this.maxDeltaTimeMultiplier * this.fixedTimeStep;
+
         /*Когда вкладка браузера неактивна, то функция "requestAnimationFrame()" приостанавливается, а когда вкладка 
         браузера снова становится активной, то параметр "timestamp" содержит большое значение равное всему времени 
-        паузы. Из-за этого значение в переменной "deltaTime" становится огромным, что приводит к множественным 
-        выполнениям логики за один кадр. Чтобы решить эту проблему мы вводим ограничение для значения в переменной 
-        "deltaTime".*/
+        неактивного периода. Из-за этого значение в переменной "deltaTime" становится огромным, что приводит к 
+        множественным выполнениям логики за один кадр. Чтобы решить эту проблему мы вводим ограничение для значения в 
+        переменной "deltaTime".*/
         if (deltaTime > maxDeltaTime) { deltaTime = maxDeltaTime };
+
         /*Обновляем время последнего вызова метода "gameLoop()".*/
         this.lastRenderedFrameTime = timestamp;
+
         /*Увеличиваем время, накопленное для рассчета данных для кадров, на время, которое прошло с последнего вызова 
         метода "gameLoop()".*/
-        this.accumulatedTimeForCalculatingFrames += deltaTime;
+        this.accumulatedTimeForCalculatingFrameData += deltaTime;
 
         /*Рассчитываем данные для следующего кадра, если накопилось времения хотя бы на рассчет данных для одного кадра. 
         Если накопилось времени больше, чем на рассчет данных для одного кадра, то делаем наперед расчеты данных для 
         нескольких кадров, но не больше, чем указано в свойстве "maxStepsPerFrame".*/
         while (
-            this.accumulatedTimeForCalculatingFrames >= this.fixedTimeStep &&
+            this.accumulatedTimeForCalculatingFrameData >= this.fixedTimeStep &&
             this.currentFrameSteps < this.maxStepsPerFrame
         ) {
             /*Рассчитываем данные для следующего кадра при помощи метода "prepareDataForNextFrame()".*/
             this.prepareDataForNextFrame();
+
             /*Поскольку рассчитали данные для одного кадра, то вычитаем из времени, накопленного для рассчета данных для 
             кадров, время, необходимое на рассчет данных для одного кадра.*/
-            this.accumulatedTimeForCalculatingFrames -= this.fixedTimeStep;
+            this.accumulatedTimeForCalculatingFrameData -= this.fixedTimeStep;
+
             /*Указываем, что за текущий вызов метода "gameLoop()" рассчитали данные для одного кадра больше.*/
             this.currentFrameSteps++;
+
             /*Рассчитываем текущее значение FPS для рассчитанных кадров при помощи метода "updateCalculatedFPS()".*/
             this.updateCalculatedFPS(timestamp);
         };
@@ -126,18 +143,23 @@ export const game = {
         "gameLoop()".*/
         this.currentFrameSteps = 0;
 
-        /*Интерполяция - это техника, которая позволяет плавно отображать движение объектов между кадрами логики, даже 
-        если частота рендеринга, например, 144 FPS, выше, чем частота обновления игровой логики, например, 60 FPS. Без 
-        интерполяции объекты будут "дергаться", так как позиции обновляются реже, чем отрисовываются. Интерполяция 
-        плавно заполняет промежутки между кадрами логики, вычисляя промежуточные позиции для рендеринга. Для 
-        использования интерполяции нужно рассчитывать коэффициент интерполяции, то есть коэффициент смещения между 
-        последним и следующим кадром. Этот коэффициент находится путем деления времени, накопленного для рассчета данных 
-        для кадров, на фиксированной временной шаг для расчета логики игры.
+        /*Интерполяция кадров - это техника, которая позволяет плавно отображать движение объектов между кадрами логики, 
+        даже если частота отрисовки, например, 144 FPS, выше, чем частота обновления игровой логики, например, 60 FPS. 
+        Без интерполяции кадров объекты будут "дергаться", так как позиции обновляются реже, чем отрисовываются. 
+        Интерполяция кадров плавно заполняет промежутки между кадрами логики, вычисляя промежуточные позиции для 
+        отрисовки. 
         
-        Рассчитываем коэффициент смещения между последним и следующим кадром для плавной отрисовки движущихся объектов. 
-        Этот коэффициент всегда между 0 (начало кадра) и 1 (конец кадра).*/
-        const interpolationFactor = this.accumulatedTimeForCalculatingFrames / this.fixedTimeStep;
-        /*Отрисовываем данные для следующего кадра при помощи метода "renderPreparedDataForNextFrame()".*/
+        Для использования интерполяции кадров нужно рассчитывать коэффициент интерполяции, то есть коэффициент смещения 
+        между последним и следующим кадром. Этот коэффициент находится путем деления времени, накопленного для рассчета 
+        данных для кадров, на фиксированной временной шаг для расчета данных для кадров игры. Этот коэффициент всегда
+        находится между 0 (начало кадра) и 1 (конец кадра).
+        
+        Рассчитываем коэффициент смещения между последним и следующим кадром для плавной отрисовки движущихся 
+        объектов и сохраняем его в переменной "interpolationFactor".*/
+        const interpolationFactor = this.accumulatedTimeForCalculatingFrameData / this.fixedTimeStep;
+
+        /*Отрисовываем данные для следующего кадра при помощи метода "renderPreparedDataForNextFrame()", используя 
+        коэффициент интерполяции.*/
         this.renderPreparedDataForNextFrame(interpolationFactor);
     },
 
@@ -162,8 +184,8 @@ export const game = {
     Метод "renderPreparedDataForNextFrame()" ничего не возвращает.*/
     renderPreparedDataForNextFrame: function (interpolationFactor) {
         /*Очищаем экран игры при помощи метода "graphicsHelper.clearScreen()".*/
-        graphicsHelper.clearScreen('rgba(125, 109, 76, 1)'); // 'rgba(118, 125, 76, 1)'
-        /*Отрисовываем сетку на экране. Это нужно только для тестирования.*/
+        graphicsHelper.clearScreen('rgba(125, 109, 76, 1)');
+        /*Отрисовываем сетку на экране.*/
         graphicsHelper.drawGrid();
         /*Отрисовываем лужи при помощи метода "puddle.draw()".*/
         for (const puddle of puddles) { puddle.draw() };
@@ -186,7 +208,7 @@ export const game = {
     /*Метод "updateCalculatedFPS()" рассчитывает текущее значение FPS для рассчитанных кадров.
 
     Метод "updateCalculatedFPS()" принимает следующие параметры:
-    1. "timestamp" - это числовой параметр, обозначающий время текущего вызова метода "gameLoop()".
+    1. "timestamp" - это числовой параметр, указывающий время текущего вызова метода "gameLoop()".
 
     Метод "updateCalculatedFPS()" ничего не возвращает.*/
     updateCalculatedFPS: function (timestamp) {
@@ -196,20 +218,20 @@ export const game = {
         this.calculatedFramesForLastSecond++;
 
         /*Проверяем не прошла ли секунда с последнего обновления FPS для рассчитанных кадров.*/
-        if (timestamp - this.lastCalculatedFPSTime >= 1000) {
+        if (timestamp - this.lastCalculatedFramesFPSTime >= 1000) {
             /*Обновляем текущее значение FPS для рассчитанных кадров.*/
-            this.currentCalculatedFPS = this.calculatedFramesForLastSecond;
+            this.calculatedFramesFPS = this.calculatedFramesForLastSecond;
             /*Сбрасываем количество рассчитанных кадров за последнюю секунду.*/
             this.calculatedFramesForLastSecond = 0;
             /*Обновляем время, когда последний раз расчитывался FPS для рассчитанных кадров.*/
-            this.lastCalculatedFPSTime = timestamp;
+            this.lastCalculatedFramesFPSTime = timestamp;
         };
     },
 
     /*Метод "updateRenderedFPS()" рассчитывает текущее значение FPS для отрисованных кадров.
 
     Метод "updateRenderedFPS()" принимает следующие параметры:
-    1. "timestamp" - это числовой параметр, обозначающий время текущего вызова метода "gameLoop()".
+    1. "timestamp" - это числовой параметр, указывающий время текущего вызова метода "gameLoop()".
 
     Метод "updateRenderedFPS()" ничего не возвращает.*/
     updateRenderedFPS: function (timestamp) {
@@ -219,13 +241,13 @@ export const game = {
         this.renderedFramesForLastSecond++;
 
         /*Проверяем не прошла ли секунда с последнего обновления FPS для отрисованных кадров.*/
-        if (timestamp - this.lastRenderedFPSTime >= 1000) {
+        if (timestamp - this.lastRenderedFramesFPSTime >= 1000) {
             /*Обновляем текущее значение FPS для отрисованных кадров.*/
-            this.currentRenderedFPS = this.renderedFramesForLastSecond;
+            this.renderedFramesFPS = this.renderedFramesForLastSecond;
             /*Сбрасываем количество отрисованных кадров за последнюю секунду.*/
             this.renderedFramesForLastSecond = 0;
             /*Обновляем время, когда последний раз расчитывался FPS для отрисованных кадров.*/
-            this.lastRenderedFPSTime = timestamp;
+            this.lastRenderedFramesFPSTime = timestamp;
         };
     },
 
@@ -235,11 +257,11 @@ export const game = {
     drawFPS: function () {
         ctx.fillStyle = '#c8ff00';
         ctx.font = '30px serif';
-        ctx.fillText(`Calculated FPS: ${this.currentCalculatedFPS}`, canvasData.canvasWidth - 250, 35);
+        ctx.fillText(`Calculated FPS: ${this.calculatedFramesFPS}`, canvasData.canvasWidth - 250, 35);
 
         ctx.fillStyle = '#c8ff00';
         ctx.font = '30px serif';
-        ctx.fillText(`Rendered FPS: ${this.currentRenderedFPS}`, canvasData.canvasWidth - 250, 70);
+        ctx.fillText(`Rendered FPS: ${this.renderedFramesFPS}`, canvasData.canvasWidth - 250, 70);
     },
 
     /*Метод "drawCurrentLevel()" отрисовывает текущий уровень в игре.
@@ -260,17 +282,44 @@ export const game = {
         ctx.fillText(`HP: ${players.playerOne.healthPoints}`, 25, 35);
     },
 
-    start: function () {
-        document.getElementsByClassName('play-button')[0].disabled = true;
-        document.getElementsByClassName('restart-button')[0].disabled = false;
+    /**/
+    initializeMenuButtonsListening: function () {
+        document.getElementsByClassName('interpolation-on-button')[0]
+            .addEventListener(
+                'click',
+                () => { game.frameInterpolation = true }
+            );
 
-        this.gameLoop();
+        document.getElementsByClassName('interpolation-off-button')[0]
+            .addEventListener(
+                'click',
+                () => { game.frameInterpolation = false }
+            );
+
+        document.getElementsByClassName('start-button')[0]
+            .addEventListener(
+                'click',
+                () => { game.start() }
+            );
+
+        document.getElementsByClassName('restart-button')[0]
+            .addEventListener(
+                'click',
+                () => { game.restart() }
+            );
     },
 
-    stop: function (reason) {
-        this.finished = true;
-        window.clearTimeout(this.setTimeoutID);
-        alert(reason === 'win' ? 'You won!' : 'You lost!');
+    /**/
+    start: function () {
+        document.getElementsByClassName('start-button')[0].disabled = true;
+        document.getElementsByClassName('restart-button')[0].disabled = false;
+
+        requestAnimationFrame((timestamp) => { game.gameLoop(timestamp) });
+    },
+
+    /**/
+    restart: function () {
+
     },
 };
 
@@ -280,22 +329,18 @@ export const game = {
 const bulletIDs = [];
 /*Создаем массив "bullets" для хранения объектов, содержащих данные о пулях.*/
 const bullets = [];
-
 /*Создаем массив "puddleIDs" для хранения ID луж.*/
 const puddleIDs = [];
 /*Создаем массив "puddles" для хранения объектов, содержащих данные о лужах.*/
 const puddles = [];
-
 /*Создаем массив "rockIDs" для хранения ID камней.*/
 const rockIDs = [];
 /*Создаем массив "rocks" для хранения объектов, содержащих данные о камнях.*/
 const rocks = [];
-
 /*Создаем массив "enemyIDs" для хранения ID врагов.*/
 const enemyIDs = [];
 /*Создаем массив "enemies" для хранения объектов, содержащих данные о врагах.*/
 const enemies = [];
-
 /*Создаем объект "players" для хранения объектов, содержащих данные о персонажах.*/
 const players = {};
 
@@ -316,7 +361,7 @@ players.playerOne = new Player(
     50, 50,
     15, 0.5,
     3, 1000,
-    5, '#000000', 2, '#00ffea',
+    5, '#000000', 1, '#00ffea',
     15, 15, 300,
     'player',
     players, enemies, rocks, puddles, bullets, bulletIDs
@@ -340,7 +385,7 @@ createEnemy(
     150, 200,
     40,
     6, 50, 100,
-    8, '#000000', 2, '#ff00d4',
+    8, '#000000', 1, '#ff00d4',
     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
@@ -352,7 +397,7 @@ createEnemy(
     200, 150,
     40,
     6, 100, 50,
-    8, '#000000', 2, '#ff00d4',
+    8, '#000000', 1, '#ff00d4',
     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
@@ -364,7 +409,7 @@ createEnemy(
     150, 200,
     40,
     6, 50, 100,
-    8, '#000000', 2, '#ff00d4',
+    8, '#000000', 1, '#ff00d4',
     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
@@ -376,7 +421,7 @@ createEnemy(
     200, 150,
     40,
     6, 100, 50,
-    8, '#000000', 2, '#ff00d4',
+    8, '#000000', 1, '#ff00d4',
     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
@@ -388,7 +433,7 @@ createEnemy(
     150, 200,
     40,
     6, 50, 100,
-    8, '#000000', 2, '#ff00d4',
+    8, '#000000', 1, '#ff00d4',
     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
@@ -400,7 +445,7 @@ createEnemy(
     200, 150,
     40,
     6, 100, 50,
-    8, '#000000', 2, '#ff00d4',
+    8, '#000000', 1, '#ff00d4',
     10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
@@ -412,14 +457,14 @@ createEnemy(
 /*
 x, y,
 width, height,
-strokeStyle, fillStyle,
+strokeStyle, lineWidth, fillStyle,
 numberOfVertices, clockwiseStepX, clockwiseStepY,
 rocks, rockIDs
 */
 createRock(
     300, 350,
     150, 200,
-    'rgba(82, 82, 82, 1)', 'rgba(82, 82, 82, 0.820)',
+    'rgba(66, 66, 66, 1)', 1, 'rgba(36, 36, 36, 0.82)',
     6, 50, 100,
     rocks, rockIDs
 );
@@ -427,7 +472,7 @@ createRock(
 createRock(
     650, 350,
     150, 200,
-    'rgba(82, 82, 82, 1)', 'rgba(82, 82, 82, 0.820)',
+    'rgba(66, 66, 66, 1)', 1, 'rgba(82, 82, 82, 0.820)',
     6, 50, 100,
     rocks, rockIDs
 );
@@ -435,7 +480,7 @@ createRock(
 createRock(
     1150, 450,
     600, 600,
-    'rgba(82, 82, 82, 1)', 'rgba(82, 82, 82, 0.820)',
+    'rgba(66, 66, 66, 1)', 1, 'rgba(82, 82, 82, 0.820)',
     8, 100, 100,
     rocks, rockIDs
 );
@@ -445,14 +490,14 @@ createRock(
 /*
 x, y,
 width, height,
-strokeStyle, fillStyle,
+strokeStyle, lineWidth, fillStyle,
 numberOfVertices, clockwiseStepX, clockwiseStepY,
 puddles, puddleIDs
 */
 createPuddle(
     500, 550,
     150, 200,
-    'rgba(0, 0, 0, 1)', 'rgba(128, 18, 238, 0.6)',
+    'rgba(50, 6, 94, 0.6)', 1, 'rgba(128, 18, 238, 0.6)',
     6, 50, 100,
     puddles, puddleIDs
 );

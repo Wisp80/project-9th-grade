@@ -1,4 +1,7 @@
 body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin: 0;
     padding: 0;
     background-color: rgb(180, 206, 168);
@@ -6,11 +9,29 @@ body {
 
 .global-container {
     margin-top: 20px;
-    display: flex;
-    justify-content: center;    
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #canvas {
     border: 1px solid black;
-    background-color: rgb(66, 125, 212);
+    background-color: rgba(125, 109, 76, 1);
+}
+
+.menu-buttons-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.interpolation-on-button,
+.interpolation-off-button,
+.start-button,
+.restart-button {
+    width: 200px;
+    height: 100px;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 1.9rem;
 }

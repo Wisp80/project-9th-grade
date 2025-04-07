@@ -5,6 +5,32 @@ import { mathHelper } from '../../helpers/mathHelper.js';
 import { game } from '../game.js';
 import { createBullet } from './bullet.js';
 
+/*Класс "Player" создает объекты, содержащие данные о персонаже.
+
+Класс "Player" принимает следующие параметры:
+1. "x" - это числовой параметр, указывающий X-координату персонажа.
+2. "y" - это числовой параметр, указывающий Y-координату персонажа.
+3. "width" - это числовой параметр, указывающий ширину персонажа.
+4. "height" - это числовой параметр, указывающий высоту персонажа.
+5. "speed" - это числовой параметр, указывающий скорость передвижения персонажа.
+6. "slowDebuffMultiplier" - это числовой параметр, указывающий множитель замедления передвижения персонажа, если 
+персонаж замедлен.
+7. "healthPoints" - это числовой параметр, указывающий очки здоровья персонажа.
+8. "takeDamageDelay" - это числовой параметр, указывающий время неуязвимости после получения урона персонажем.
+9. "bulletRadius" - это числовой параметр, указывающий радиус пуль, которыми стреляет персонаж.
+10. "bulletStrokeStyle" - это строковой параметр, указывающий цвет обводки пуль, которыми стреляет персонаж.
+11. "bulletLineWidth" - это числовой параметр, указывающий ширину овбодки пуль, которыми стреляет персонаж.
+12. "bulletFillStyle" - это строковой параметр, указывающий цвет заливки пуль, которыми стреляет персонаж.
+13. "bulletSpeedX" - это числовой параметр, указывающий скорость пуль по оси X, которыми стреляет персонаж.
+14. "bulletSpeedY" - это числовой параметр, указывающий скорость пуль по оси Y, которыми стреляет персонаж.
+15. "shootDelay" - это числовой параметр, указывающий задержку между выстрелами персонажа.
+16. "bulletOwner" - это строковой параметр, указывающий кто владелец пуль, стреляемых персонажем.
+17. "players" - это параметр в виде объекта, содержащего объекты, которые содержат данные о персонажах.
+18. "enemies" - это параметр в виде массива, содержащего объекты, которые содержат данные о врагах.
+19. "rocks" - это параметр в виде массива, содержащего объекты, которые содержат данные о камнях.
+20. "puddles" - это параметр в виде массива, содержащего объекты, которые содержат данные о лужах.
+21. "bullets" - это параметр в виде массива, содержащего объекты, которые содержат данные о пулях.
+22. "bulletIDs" - это параметр в виде массива, содержащего ID пуль.*/
 export class Player {
     constructor(
         x, y,
@@ -62,17 +88,17 @@ export class Player {
         this.shotRecently = false;
         /*Свойство, описывающее, кто владелец пуль, стреляемых персонажем.*/
         this.bulletOwner = bulletOwner;
-        /*Объект, хранящий объекты, содержащие данные о персонажах.*/
+        /*Объект, содержащий объекты, содержащие данные о персонажах.*/
         this.players = players;
-        /*Массив, хранящий объекты, содержащие данные о врагах.*/
+        /*Массив, содержащий объекты, содержащие данные о врагах.*/
         this.enemies = enemies;
-        /*Массив, хранящий объекты, содержащие данные о камнях.*/
+        /*Массив, содержащий объекты, содержащие данные о камнях.*/
         this.rocks = rocks;
-        /*Массив, хранящий объекты, содержащие данные о лужах.*/
+        /*Массив, содержащий объекты, содержащие данные о лужах.*/
         this.puddles = puddles;
-        /*Массив, хранящий объекты, содержащие данные о пулях.*/
+        /*Массив, содержащий объекты, содержащие данные о пулях.*/
         this.bullets = bullets;
-        /*Массив, хранящий ID пуль.*/
+        /*Массив, содержащий ID пуль.*/
         this.bulletIDs = bulletIDs;
     };
 
@@ -561,7 +587,7 @@ export class Player {
         this.slowed = false;
     };
 
-    /*Метод "draw()" отрисовыввает персонажа.
+    /*Метод "draw()" отрисовывает персонажа.
 
     Метод "draw()" принимает следующие параметры:
     1. "interpolationFactor" - это числовой параметр, указывающий коэффициет интерполяции для создания промежуточных 
@@ -569,10 +595,10 @@ export class Player {
 
     Метод "draw()" ничего не возвращает.*/
     draw(interpolationFactor) {
-        /*Остаток от деления числа на 360 всегда будет в диапозоне от 0 до 359. При помощи этого мы на основе количества 
-        рассчитанных кадров за всю игру получаем градусы. Мы переводим полученные градусы в радианы, так как дальше мы 
-        используем методы "Math.cos()" и "Math.sin()", использующие радианы в качестве параметров. Чтобы 
-        получить радианы умножаем градусы на "(π / 180)".*/
+        /*Остаток от деления числа на 360 всегда будет в диапозоне от 0 до 359. При помощи этого на основе количества 
+        рассчитанных кадров за всю игру рассчитываем градусы. Мы переводим полученные градусы в радианы, так как дальше 
+        мы используем методы "Math.cos()" и "Math.sin()", использующие радианы в качестве параметров. Чтобы получить 
+        радианы умножаем градусы на "(π / 180)".*/
         const angle = (game.totalCalculatedFrames % 360) * Math.PI / 180;
 
         /*В контексте функции "createLinearGradient()" длина градиента - это расстояние между начальной и конечной 
@@ -584,7 +610,7 @@ export class Player {
         const length = Math.sqrt(this.width * this.width + this.height * this.height);
 
         /*Рассчитываем конечные точки градиента. Эти точки мы рассчитываем из центра прямоугольной области прибавляя или
-        вычитая половину длины диагонали этой прямоугольной области, чтобы в итоге получалась целая диагональ. 
+        вычитая половину длины диагонали этой прямоугольной области, чтобы в итоге в сумме получалась целая диагональ. 
         
         Если отрисовывать градиент, используя такие точки, то будем получать градиент строго по диагонали. А нам нужно,
         чтобы эта диагональ постоянно смещалась по кругу. Поэтому нужно умножать половину длины диагонали прямоугольной
@@ -610,6 +636,7 @@ export class Player {
         const hue = game.totalCalculatedFrames % 360;
         const saturation = 50;
         const lightness = 50;
+
         /*Добавляем цветовые остановки (от 0 до 1). Цветовые остановки - это точки, где градиент меняет один цвет на 
         другой.*/
         gradient.addColorStop(0, `hsl(${hue}, ${saturation}%, ${lightness}%)`);
@@ -624,8 +651,13 @@ export class Player {
         gradient.addColorStop(0.9, `hsl(${(hue + 110) % 360}, ${saturation}%, ${lightness}%)`);
         gradient.addColorStop(1, `hsl(${(hue + 120) % 360}, ${saturation}%, ${lightness}%)`);
 
-        /*Устанавливаем цвет заливки.*/
-        ctx.fillStyle = 'rgba(50, 65, 62, 0.527)';
+        /*Устанавливаем цвет заливки в зависимости получал ли недавно урон персонаж или нет.*/
+        if (this.tookDamageRecently) {
+            ctx.fillStyle = 'rgba(216, 31, 25, 0.726)';
+        } else {
+            ctx.fillStyle = 'rgba(50, 65, 62, 0.527)';
+        };
+
         /*Устанавливаем градиент как цвет линии обводки.*/
         ctx.strokeStyle = gradient;
         /*Устанавливаем ширину линии обводки.*/
@@ -636,25 +668,51 @@ export class Player {
         промежуточных кадров, которые добавляют плавности движению.*/
         const x = this.previousX + (this.x - this.previousX) * interpolationFactor;
         const y = this.previousY + (this.y - this.previousY) * interpolationFactor;
-        /*Рисуем персонажа в виде прямоугольника с учетом интерполяции.*/
-        ctx.fillRect(x, y, this.width, this.height);
-        /*Обводим персонажа с учетом интерполяции.*/
-        ctx.strokeRect(x, y, this.width, this.height)
 
-        /*Рисуем персонажа в виде прямоугольника без учета интерполяции.*/
-        // ctx.fillRect(this.x , this.y, this.width, this.height);
-        /*Обводим персонажа без учета интерполяции.*/
-        // ctx.strokeRect(this.x , this.y, this.width, this.height);
+        if (game.frameInterpolation) {
+            /*Отрисовываем персонажа в виде прямоугольника с учетом интерполяции.*/
+            ctx.fillRect(x, y, this.width, this.height);
+            /*Обводим персонажа с учетом интерполяции.*/
+            ctx.strokeRect(x, y, this.width, this.height);
+            /*Отрисовываем предсказанный пукть, который пройдет персонаж в следующем кадре с учетом интерполяции. Это 
+            нужно только для тестирования.*/
+            // ctx.lineWidth = 1;
+            // ctx.strokeStyle = '#00c3ff';
+            // ctx.strokeRect(x + this.width, y, this.speed, this.height);
+            // ctx.strokeRect(x - this.speed, y, this.speed, this.height);
+            // ctx.strokeRect(x, y - this.speed, this.width, this.speed);
+            // ctx.strokeRect(x, y + this.height, this.width, this.speed);
 
-        // ctx.lineWidth = 1;
-        // ctx.strokeStyle = 'lime';
-        // ctx.strokeRect(this.x + this.speed, this.y, this.width, this.height);
-        // ctx.strokeRect(this.x - this.speed, this.y, this.width, this.height);
-        // ctx.strokeRect(this.x, this.y - this.speed, this.width, this.height);
-        // ctx.strokeRect(this.x, this.y + this.speed, this.width, this.height);
+            /*Отрисовываем предсказанную позицию персонажа в следующем кадре с учетом интерполяции. Это нужно только для 
+            тестирования.*/
+            // ctx.lineWidth = 1;
+            // ctx.strokeStyle = '#ff9100';
+            // ctx.strokeRect(x + this.speed, y, this.width, this.height);
+            // ctx.strokeRect(x - this.speed, y, this.width, this.height);
+            // ctx.strokeRect(x, y - this.speed, this.width, this.height);
+            // ctx.strokeRect(x, y + this.speed, this.width, this.height);
+        } else {
+            /*Отрисовываем персонажа в виде прямоугольника без учета интерполяции. Это нужно только для тестирования.*/
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            /*Обводим персонажа без учета интерполяции. Это нужно только для тестирования.*/
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
+            /*Отрисовываем предсказанный пукть, который пройдет персонаж в следующем кадре без учета интерполяции. Это 
+            нужно только для тестирования.*/
+            // ctx.lineWidth = 1;
+            // ctx.strokeStyle = '#00c3ff';
+            // ctx.strokeRect(this.x + this.width, this.y, this.speed, this.height);
+            // ctx.strokeRect(this.x - this.speed, this.y, this.speed, this.height);
+            // ctx.strokeRect(this.x, this.y - this.speed, this.width, this.speed);
+            // ctx.strokeRect(this.x, this.y + this.height, this.width, this.speed);
 
-        // ctx.strokeStyle = '#00c3ff';
-        // ctx.strokeRect(this.x + this.width, this.y, this.speed, this.height);
-        // ctx.strokeRect(this.x - this.speed, this.y, this.speed, this.height);
+            /*Отрисовываем предсказанную позицию персонажа в следующем кадре без учета интерполяции. Это нужно только 
+            для тестирования.*/
+            // ctx.lineWidth = 1;
+            // ctx.strokeStyle = '#ff9100';
+            // ctx.strokeRect(this.x + this.speed, this.y, this.width, this.height);
+            // ctx.strokeRect(this.x - this.speed, this.y, this.width, this.height);
+            // ctx.strokeRect(this.x, this.y - this.speed, this.width, this.height);
+            // ctx.strokeRect(this.x, this.y + this.speed, this.width, this.height);
+        };
     };
 };
