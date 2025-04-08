@@ -101,125 +101,97 @@ class Rock {
         // graphicsHelper.drawPolygonFromVertices(this.vertices, this.lineWidth, this.strokeStyle, this.fillStyle);
 
 
-
-
-
-
-        
-
-        // const ctx = canvas.getContext('2d');
-        // const steps = 5; // Увеличили количество ступеней
-        // const center = { x: 0, y: 0 };
-
-        // // 1. Находим центр камня
-        // for (const v of this.vertices) {
-        //     center.x += v.x;
-        //     center.y += v.y;
-        // }
-        // center.x /= this.vertices.length;
-        // center.y /= this.vertices.length;
-
-        // // 2. Оттенки серого (от темного снаружи к светлому внутри)
-        // const colors = ['#333333', '#555555', '#777777', '#999999', '#CCCCCC'];
-        // const scales = [1.0, 0.8, 0.6, 0.4, 0.2]; // Размеры для каждого кольца
-
-        // // 3. Рисуем ступени
-        // for (let i = 0; i < steps; i++) {
-        //     const path = new Path2D();
-        //     const scaledVertices = this.vertices.map(v => ({
-        //         x: center.x + (v.x - center.x) * scales[i],
-        //         y: center.y + (v.y - center.y) * scales[i]
-        //     }));
-
-        //     path.moveTo(scaledVertices[0].x, scaledVertices[0].y);
-        //     for (let j = 1; j < scaledVertices.length; j++) {
-        //         path.lineTo(scaledVertices[j].x, scaledVertices[j].y);
-        //     }
-        //     path.closePath();
-
-        //     // Заливаем и обводим
-        //     ctx.fillStyle = colors[i];
-        //     ctx.fill(path);
-        //     ctx.strokeStyle = i === 0 ? '#000000' : 'rgba(0,0,0,0.3)'; // Внешний контур четче
-        //     ctx.lineWidth = 1;
-        //     ctx.stroke(path);
-        // }
-
-
-
-
-        const baseColor = '#777777';
-        const steps = 5;
-
-        const ctx = canvas.getContext('2d');
+        // const baseColor = '#777777';
+        const baseColor = this.fillStyle;
+        const steps = 7;
         const center = { x: 0, y: 0 };
 
         // 1. Находим центр камня
-        for (const v of this.vertices) {
-            center.x += v.x;
-            center.y += v.y;
-        }
+        for (const vertice of this.vertices) {
+            center.x += vertice.x;
+            center.y += vertice.y;
+        };
+
         center.x /= this.vertices.length;
         center.y /= this.vertices.length;
 
-        // 2. Генерируем оттенки от темного к светлому на основе baseColor
+        // 2. Генерируем оттенки (с учетом прозрачности)
         const colors = generateColorGradient(baseColor, steps);
 
-        // 3. Размеры для каждого кольца (от 1.0 до 0.2)
-        const scales = Array.from({ length: steps }, (_, i) =>
-            1.0 - (i / (steps - 1)) * 0.8
+        // 3. Размеры слоев
+        const scales = Array.from(
+            { length: steps },
+            (_, i) => 1.0 - (i / (steps - 1)) * 0.8
         );
 
         // 4. Рисуем ступени
         for (let i = 0; i < steps; i++) {
             const path = new Path2D();
-            const scaledVertices = this.vertices.map(v => ({
-                x: center.x + (v.x - center.x) * scales[i],
-                y: center.y + (v.y - center.y) * scales[i]
-            }));
+
+            const scaledVertices = this.vertices.map(
+                v => (
+                    {
+                        x: center.x + (v.x - center.x) * scales[i],
+                        y: center.y + (v.y - center.y) * scales[i]
+                    }
+                )
+            );
 
             path.moveTo(scaledVertices[0].x, scaledVertices[0].y);
+
             for (let j = 1; j < scaledVertices.length; j++) {
                 path.lineTo(scaledVertices[j].x, scaledVertices[j].y);
-            }
+            };
+
             path.closePath();
 
-            // Заливаем и обводим
+            // Заливка и обводка
             ctx.fillStyle = colors[i];
             ctx.fill(path);
             ctx.strokeStyle = i === 0 ? '#000000' : 'rgba(0,0,0,0.3)';
             ctx.lineWidth = 1;
             ctx.stroke(path);
-        }
+        };
 
+        // Генератор градиента (поддерживает HEX и RGBA)
         function generateColorGradient(baseColor, steps) {
-            const hexToRgb = (hex) => {
-                const r = parseInt(hex.slice(1, 3), 16);
-                const g = parseInt(hex.slice(3, 5), 16);
-                const b = parseInt(hex.slice(5, 7), 16);
-                return [r, g, b];
-            };
-
-            const rgbToHex = (r, g, b) => {
-                return `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')}`;
-            };
-
-            const [r, g, b] = hexToRgb(baseColor);
+            const parsed = parseColor(baseColor);
+            let [r, g, b, a = 1] = parsed; // По умолчанию alpha = 1
             const colors = [];
 
             for (let i = 0; i < steps; i++) {
                 const factor = i / (steps - 1); // От 0 (темный) до 1 (светлый)
-                const darkenFactor = 1 - factor * 0.7; // Уменьшаем затемнение для плавности
+                const darkenFactor = 1 - factor * 0.7;
 
                 const newR = Math.floor(r * darkenFactor);
                 const newG = Math.floor(g * darkenFactor);
                 const newB = Math.floor(b * darkenFactor);
+                const newA = a; // Сохраняем исходную прозрачность
 
-                colors.push(rgbToHex(newR, newG, newB));
-            }
+                colors.push(`rgba(${newR}, ${newG}, ${newB}, ${newA})`);
+            };
 
-            return colors.reverse(); // Чтобы darkest был снаружи
-        }
+            return colors.reverse(); // Темные снаружи
+        };
+
+        // Парсит HEX (#777777) или RGBA (rgba(119,119,119,0.5))
+        function parseColor(color) {
+            if (color.startsWith('#')) {
+                const hex = color.slice(1);
+
+                return [
+                    parseInt(hex.substring(0, 2), 16),
+                    parseInt(hex.substring(2, 4), 16),
+                    parseInt(hex.substring(4, 6), 16),
+                    1 // alpha
+                ];
+            } else if (color.startsWith('rgba')) {
+                const match = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
+                return match ? match.slice(1, 5).map(Number) : [119, 119, 119, 1];
+            };
+
+            return [119, 119, 119, 1]; // fallback
+        };
     };
 };
 
