@@ -137,10 +137,10 @@ class Rock {
 Функция "generateRockID()" возвращает уникальный ID камня.*/
 function generateRockID(rockIDs) {
     /*Создаем ID для камня при помощи метода "mathHelper.getRandomIntFromInterval()".*/
-    let rockID = mathHelper.getRandomIntFromInterval(0, 1000).toString();
+    let rockID = mathHelper.getRandomIntFromInterval(0, 1_000_000).toString();
     /*Проверяем не создали ли мы ID, который уже существует. Если это так, то пересоздаем ID для камня до тех пор, пока
     не получим уникальный ID.*/
-    while (rockIDs.includes(rockID)) { rockID = mathHelper.getRandomIntFromInterval(0, 1000).toString() };
+    while (rockIDs.includes(rockID)) { rockID = mathHelper.getRandomIntFromInterval(0, 1_000_000).toString() };
     /*Добавляем созданный ID камня в массив, куда должны сохраняться ID камней.*/
     rockIDs.push(rockID);
     /*Возвращаем созданный ID камня.*/

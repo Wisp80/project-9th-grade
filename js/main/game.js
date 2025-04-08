@@ -9,6 +9,10 @@ import { createPuddle } from './entities/puddle.js';
 
 /*Объект "game" представляет из себя главный объект игры, обрабатывающий все данные игры.*/
 export const game = {
+    /*Свойство, которое хранит ID последнего вызова функции "requestAnimationFrame()". Это свойство используется для
+    подчистки работы функции "requestAnimationFrame()".*/
+    rafID: null,
+
     /*Свойство "totalCalculatedFrames" нужно для хранения количества рассчитанных кадров за всю игру.*/
     totalCalculatedFrames: 0,
     /*Свойство "calculatedFramesForLastSecond" нужно для хранения количества рассчитанных кадров за последнюю секунду.
@@ -45,7 +49,7 @@ export const game = {
     currentFrameSteps: 0,
     /*Свойство "maxStepsPerFrame" нужно для хранения значения, которое обозначает сколько кадров может быть максимально 
     рассчитано за время одного вызов метода "gameLoop()".*/
-    maxStepsPerFrame: 5,
+    maxStepsPerFrame: 1,
     /*Свойство "accumulatedTimeForCalculatingFrameData" нужно для хранения значения, которое обозначает время, 
     накопленное для рассчета данных для кадров, то есть время, накопленное между всеми вызовами метода "gameLoop()".*/
     accumulatedTimeForCalculatingFrameData: 0,
@@ -53,7 +57,7 @@ export const game = {
     отрисованы данные для кадра, то есть время последнего вызова метода "gameLoop()".*/
     lastRenderedFrameTime: 0,
     /*Множитель для рассчета локальной переменной "maxDeltaTime" в метода "gameLoop()".*/
-    maxDeltaTimeMultiplier: 30,
+    maxDeltaTimeMultiplier: 3,
     /*Свойство "frameInterpolation" содержит флаг для указания использовать ли интерполяцию кадров или нет.*/
     frameInterpolation: true,
 
@@ -64,6 +68,10 @@ export const game = {
 
     Метод "gameLoop()" ничего не возвращает.*/
     gameLoop: function (timestamp) {
+        /*Подчишаем работы предыдущего вызова функции "requestAnimationFrame()" при помощи функции 
+        "cancelAnimationFrame()".*/
+        cancelAnimationFrame(this.rafID);
+
         /*Функция "requestAnimationFrame()" принимает в качестве параметра callback-функцию. Функция 
         "requestAnimationFrame()" сама решает когда нужно вызывать переданную в нее callback-функцию.
         
@@ -72,7 +80,9 @@ export const game = {
         переданная в нее callback-функцию будет вызываться равное частоте обновления монитора раз в секунду, при этом 
         браузер будет стараться синхронизировать функцию "requestAnimationFrame()" с вертикальной синхронизацией 
         монитора, чтобы избежать "разрыва кадров". Также если вкладка неактивна или страница не видна, то браузер будет 
-        замедлять или останавливать функцию "requestAnimationFrame()", обычно до 1-10 FPS.
+        замедлять или останавливать функцию "requestAnimationFrame()", обычно до 1-10 FPS. Нужно всегда помнить, что
+        функция "requestAnimationFrame()" синхронизируется с частотой основного монитора, например, 144 Гц, даже если 
+        окно находится на втором, например, 60 Гц.
         
         Когда функция "requestAnimationFrame()" вызывает переданную в нее callback-функцию, она передает в эту 
         callback-функцию параметр (в нашем случае это переменная "timestamp"), обозначающий время вызова этой 
@@ -92,7 +102,7 @@ export const game = {
         
         Рекурсивно вызываем функцию "requestAnimationFrame()", которая будет рекурсивно вызывать метод "gameLoop()", что
         приведит к бесконченому запуску циклов игры.*/
-        requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
+        this.rafID = requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
 
         /*Рассчитываем текущее значение FPS для отрисованных кадров при помощи метода "updateRenderedFPS()".*/
         this.updateRenderedFPS(timestamp);
@@ -354,7 +364,8 @@ healthPoints, takeDamageDelay,
 bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
 bulletSpeedX, bulletSpeedY, shootDelay,
 bulletOwner,
-players, enemies, rocks, puddles, bullets, bulletIDs
+players, enemies, rocks, puddles, bullets, 
+bulletIDs, enemyIDs
 */
 players.playerOne = new Player(
     100, 400,
@@ -362,9 +373,10 @@ players.playerOne = new Player(
     15, 0.2,
     3, 1000,
     5, '#000000', 1, '#00ffea',
-    15, 15, 300,
+    15, 15, 20,
     'player',
-    players, enemies, rocks, puddles, bullets, bulletIDs
+    players, enemies, rocks, puddles, bullets,
+    bulletIDs, enemyIDs
 );
 
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -386,7 +398,7 @@ createEnemy(
     40,
     6, 50, 100,
     8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
     enemyIDs
@@ -398,7 +410,7 @@ createEnemy(
     40,
     6, 100, 50,
     8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
     enemyIDs
@@ -410,7 +422,7 @@ createEnemy(
     40,
     6, 50, 100,
     8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
     enemyIDs
@@ -422,7 +434,7 @@ createEnemy(
     40,
     6, 100, 50,
     8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
     enemyIDs
@@ -434,7 +446,7 @@ createEnemy(
     40,
     6, 50, 100,
     8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
     enemyIDs
@@ -446,7 +458,81 @@ createEnemy(
     40,
     6, 100, 50,
     8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(750, 2000),
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
+
+
+
+createEnemy(
+    200, 650,
+    150, 200,
+    40,
+    6, 50, 100,
+    8, '#000000', 1, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
+
+createEnemy(
+    300, 200,
+    200, 150,
+    40,
+    6, 100, 50,
+    8, '#000000', 1, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
+
+createEnemy(
+    600, 300,
+    150, 200,
+    40,
+    6, 50, 100,
+    8, '#000000', 1, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
+
+createEnemy(
+    900, 600,
+    200, 150,
+    40,
+    6, 100, 50,
+    8, '#000000', 1, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
+
+createEnemy(
+    1100, 400,
+    150, 200,
+    40,
+    6, 50, 100,
+    8, '#000000', 1, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
+    'enemy', bulletIDs, bullets,
+    players, enemies, rocks,
+    enemyIDs
+);
+
+createEnemy(
+    1200, 100,
+    200, 150,
+    40,
+    6, 100, 50,
+    8, '#000000', 1, '#ff00d4',
+    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
     'enemy', bulletIDs, bullets,
     players, enemies, rocks,
     enemyIDs
@@ -484,7 +570,7 @@ createRock(
     1150, 450,
     600, 600,
     'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)',
-    7, 0.7, true, 0.8,
+    7, 0.7, true, 0.95,
     8, 100, 100,
     rocks, rockIDs
 );

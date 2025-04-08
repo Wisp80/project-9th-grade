@@ -23,14 +23,15 @@ import { createBullet } from './bullet.js';
 12. "bulletFillStyle" - это строковой параметр, указывающий цвет заливки пуль, которыми стреляет персонаж.
 13. "bulletSpeedX" - это числовой параметр, указывающий скорость пуль по оси X, которыми стреляет персонаж.
 14. "bulletSpeedY" - это числовой параметр, указывающий скорость пуль по оси Y, которыми стреляет персонаж.
-15. "shootDelay" - это числовой параметр, указывающий задержку между выстрелами персонажа.
+15. "shootDelay" - это числовой параметр, указывающий задержку между выстрелами персонажа в рассчитанных кадрах.
 16. "bulletOwner" - это строковой параметр, указывающий кто владелец пуль, стреляемых персонажем.
 17. "players" - это параметр в виде объекта, содержащего объекты, которые содержат данные о персонажах.
 18. "enemies" - это параметр в виде массива, содержащего объекты, которые содержат данные о врагах.
 19. "rocks" - это параметр в виде массива, содержащего объекты, которые содержат данные о камнях.
 20. "puddles" - это параметр в виде массива, содержащего объекты, которые содержат данные о лужах.
 21. "bullets" - это параметр в виде массива, содержащего объекты, которые содержат данные о пулях.
-22. "bulletIDs" - это параметр в виде массива, содержащего ID пуль.*/
+22. "bulletIDs" - это параметр в виде массива, содержащего ID пуль.
+23. "enemyIDs" - это параметр в виде массива, содержащего ID врагов.*/
 export class Player {
     constructor(
         x, y,
@@ -40,7 +41,8 @@ export class Player {
         bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
         bulletSpeedX, bulletSpeedY, shootDelay,
         bulletOwner,
-        players, enemies, rocks, puddles, bullets, bulletIDs
+        players, enemies, rocks, puddles, bullets, 
+        bulletIDs, enemyIDs
     ) {
         /*X-координата персонажа.*/
         this.x = x;
@@ -82,10 +84,12 @@ export class Player {
         this.bulletSpeedX = bulletSpeedX;
         /*Скорость пуль по оси Y, которыми стреляет персонаж.*/
         this.bulletSpeedY = bulletSpeedY;
-        /*Задержка между выстрелами персонажа.*/
+        /*Задержка между выстрелами персонажа в рассчитанных кадрах.*/
         this.shootDelay = shootDelay;
         /*Флаг, показывающий не стрелял ли недавно персонаж.*/
         this.shotRecently = false;
+        /*Номер кадра, когда был сделан последний выстрел.*/
+        this.lastShotFrame = 0;
         /*Свойство, описывающее, кто владелец пуль, стреляемых персонажем.*/
         this.bulletOwner = bulletOwner;
         /*Объект, содержащий объекты, содержащие данные о персонажах.*/
@@ -100,6 +104,8 @@ export class Player {
         this.bullets = bullets;
         /*Массив, содержащий ID пуль.*/
         this.bulletIDs = bulletIDs;
+        /*Массив, содержащий ID врагов.*/
+        this.enemyIDs = enemyIDs;
     };
 
     /*Метод "processMovingControls()" обрабатывает нажатые игроком кнопки передвижения.
@@ -200,6 +206,10 @@ export class Player {
     Метод "processShootingControls()" не принимает никаких параметров.
     Метод "processShootingControls()" ничего не возвращает.*/
     processShootingControls() {
+        /*Если с момента последнего выстрела персонажа прошло достаточно рассчитанных кадров, то устанавливаем флаг, 
+        указывающий, что персонаж недавно не стрелял, то есть персонаж снова может стрелять.*/
+        if (game.totalCalculatedFrames - this.lastShotFrame > this.shootDelay) { this.shotRecently = false };
+
         /*Если нажата одна из неразрешенных комбинаций кнопок стрельбы, то не персонаж не стреляет.*/
         if (controls.isUpArrowKeyDown && controls.isDownArrowKeyDown ||
             controls.isRightArrowKeyDown && controls.isLeftArrowKeyDown ||
@@ -234,24 +244,14 @@ export class Player {
                 currentSpeedX, currentSpeedY,
                 this.bulletOwner,
                 this.players, this.enemies, this.rocks, this.bullets,
-                this.bulletIDs
+                this.bulletIDs, this.enemyIDs
             );
 
             /*Устанавливаем флаг, указывающий, что персонаж недавно стрелял, то есть персонаж больше не может 
             стрелять.*/
             this.shotRecently = true;
-
-            /*Вызываем функцию "setTimeout()", которая создает таймер на "shootDelay" милисекунд. Когда таймер истекает
-            вызывается callback-функция, которая установливает флаг, указывающий, что персонаж не стрелял недавно, то 
-            есть персонаж снова может стрелять.*/
-            const setTimeoutID = setTimeout(
-                () => {
-                    this.shotRecently = false;
-                    clearTimeout(setTimeoutID);
-                },
-                this.shootDelay
-            );
-
+            /*Сохраняем номер рассчитанного кадра, когда был сделан последний выстрел.*/
+            this.lastShotFrame = game.totalCalculatedFrames;
             return;
         };
 
@@ -679,7 +679,7 @@ export class Player {
             ctx.fillRect(x, y, this.width, this.height);
             /*Обводим персонажа с учетом интерполяции.*/
             ctx.strokeRect(x, y, this.width, this.height);
-            /*Отрисовываем предсказанный пукть, который пройдет персонаж в следующем кадре с учетом интерполяции. Это 
+            /*Отрисовываем предсказанный путь, который пройдет персонаж в следующем кадре с учетом интерполяции. Это 
             нужно только для тестирования.*/
             // ctx.lineWidth = 1;
             // ctx.strokeStyle = '#00c3ff';

@@ -27,14 +27,15 @@ import { createBullet } from './bullet.js';
 12. "bulletFillStyle" - это строковой параметр, указывающий цвет заливки пуль, которыми стреляет враг.
 13. "bulletSpeedX" - это числовой параметр, указывающий скорость пуль по оси X, которыми стреляет враг.
 14. "bulletSpeedY" - это числовой параметр, указывающий скорость пуль по оси Y, которыми стреляет враг.
-15. "shootDelay" - это числовой параметр, указывающий задержку между выстрелами врага.
+15. "shootDelay" - это числовой параметр, указывающий задержку между выстрелами врага в рассчитанных кадрах.
 16. "bulletOwner" - это строковой параметр, указывающий кто владелец пуль, стреляемых врагом.
 17. "bulletIDs" - это параметр в виде массива, содержащего ID пуль.
 18. "bullets" - это параметр в виде массива, содержащего объекты, которые содержат данные о пулях.
 19. "players" - это параметр в виде объекта, содержащего объекты, которые содержат данные о персонажах.
 20. "enemies" - это параметр в виде массива, содержащего объекты, которые содержат данные о врагах.
 21. "rocks" - это параметр в виде массива, содержащего объекты, которые содержат данные о камнях.
-22. "ID" - это строковой параметр, указывающий ID врага.*/
+22. "enemyIDs" - это параметр в виде массива, содержащего ID врагов.
+23. "ID" - это строковой параметр, указывающий ID врага.*/
 class Enemy {
     constructor(
         x, y,
@@ -45,7 +46,7 @@ class Enemy {
         bulletSpeedX, bulletSpeedY, shootDelay,
         bulletOwner, bulletIDs, bullets,
         players, enemies, rocks,
-        ID
+        enemyIDs, ID
     ) {
         /*X-координата врага.*/
         this.x = x;
@@ -92,10 +93,12 @@ class Enemy {
         this.bulletSpeedX = bulletSpeedX;
         /*Скорость пуль по оси Y, которыми стреляет враг.*/
         this.bulletSpeedY = bulletSpeedY;
-        /*Задержка между выстрелами врага.*/
+        /*Задержка между выстрелами врага в рассчитанных кадрах.*/
         this.shootDelay = shootDelay;
         /*Флаг, показывающий не стрелял ли недавно враг.*/
         this.shotRecently = false;
+        /*Номер кадра, когда был сделан последний выстрел.*/
+        this.lastShotFrame = 0;
         /*Свойство, описывающее, кто владелец пуль, стреляемых врагом.*/
         this.bulletOwner = bulletOwner;
         /*Массив, содержащий ID пуль.*/
@@ -108,6 +111,8 @@ class Enemy {
         this.enemies = enemies;
         /*Массив, содержащий объекты, содержащие данные о камнях.*/
         this.rocks = rocks;
+        /*Массив, содержащий ID врагов.*/
+        this.enemyIDs = enemyIDs;
         /*ID врага.*/
         this.ID = ID;
     };
@@ -177,16 +182,9 @@ class Enemy {
     Метод "shoot()" не принимает никаких параметров.
     Метод "shoot()" ничего не возвращает.*/
     shoot() {
-        /*Случайно определяем в какую сторону будет стрелять враг:
-        1 - ↗
-        2 - ↘
-        3 - ↙
-        4 - ↖
-        5 - ↑
-        6 - →
-        7 - ↓
-        8 - ←*/
-        const direction = mathHelper.getRandomIntFromInterval(1, 8);
+        /*Если с момента последнего выстрела врага прошло достаточно рассчитанных кадров, то устанавливаем флаг, 
+        указывающий, что враг недавно не стрелял, то есть враг снова может стрелять.*/
+        if (game.totalCalculatedFrames - this.lastShotFrame > this.shootDelay) { this.shotRecently = false };
 
         /*Создаем вспомогательную локальную функцию "makeOneShot()", которая позволяет удобно создавать объекты, 
         содержащие данные о пулях.
@@ -206,26 +204,29 @@ class Enemy {
                 currentSpeedX, currentSpeedY,
                 this.bulletOwner,
                 this.players, this.enemies, this.rocks, this.bullets,
-                this.bulletIDs
+                this.bulletIDs, this.enemyIDs
             );
 
             /*Устанавливаем флаг, указывающий, что враг недавно стрелял, то есть враг больше не может стрелять.*/
             this.shotRecently = true;
-
-            /*Вызываем функцию "setTimeout()", которая создает таймер на "shootDelay" милисекунд. Когда таймер истекает
-            вызывается callback-функция, которая установливает флаг, указывающий, что враг не стрелял недавно, то есть 
-            враг снова может стрелять.*/
-            const setTimeoutID = setTimeout(
-                () => {
-                    this.shotRecently = false;
-                    clearTimeout(setTimeoutID);
-                },
-                this.shootDelay
-            );
+            /*Сохраняем номер рассчитанного кадра, когда был сделан последний выстрел.*/
+            this.lastShotFrame = game.totalCalculatedFrames;
+            return;
         };
 
         /*Если враг недавно не стрелял, то делаем выстрел в зависимости от выбранного направления.*/
         if (!this.shotRecently) {
+            /*Случайно определяем в какую сторону будет стрелять враг:
+            1 - ↗
+            2 - ↘
+            3 - ↙
+            4 - ↖
+            5 - ↑
+            6 - →
+            7 - ↓
+            8 - ←*/
+            const direction = mathHelper.getRandomIntFromInterval(1, 8);
+
             switch (direction) {
                 case 1: {
                     makeOneShot(this.bulletSpeedX, -1 * this.bulletSpeedY);
@@ -340,10 +341,10 @@ class Enemy {
 Функция "generateEnemyID()" возвращает уникальный ID врага.*/
 function generateEnemyID(enemyIDs) {
     /*Создаем ID для врага при помощи метода "mathHelper.getRandomIntFromInterval()".*/
-    let enemyID = mathHelper.getRandomIntFromInterval(0, 1000).toString();
+    let enemyID = mathHelper.getRandomIntFromInterval(0, 1_000_000).toString();
     /*Проверяем не создали ли мы ID, который уже существует. Если это так, то пересоздаем ID для врага до тех пор, пока
     не получим уникальный ID.*/
-    while (enemyIDs.includes(enemyID)) { enemyID = mathHelper.getRandomIntFromInterval(0, 1000).toString() };
+    while (enemyIDs.includes(enemyID)) { enemyID = mathHelper.getRandomIntFromInterval(0, 1_000_000).toString() };
     /*Добавляем созданный ID врага в массив, куда должны сохраняться ID врагов.*/
     enemyIDs.push(enemyID);
     /*Возвращаем созданный ID врага.*/
@@ -371,7 +372,7 @@ function generateEnemyID(enemyIDs) {
 12. "bulletFillStyle" - это строковой параметр, указывающий цвет заливки пуль, которыми стреляет враг.
 13. "bulletSpeedX" - это числовой параметр, указывающий скорость пуль по оси X, которыми стреляет враг.
 14. "bulletSpeedY" - это числовой параметр, указывающий скорость пуль по оси Y, которыми стреляет враг..
-15. "shootDelay" - это числовой параметр, указывающий задержка между выстрелами врага.
+15. "shootDelay" - это числовой параметр, указывающий задержка между выстрелами врага в рассчитанных кадрах.
 16. "bulletOwner" - это строковой параметр, указывающий кто владелец пуль, стреляемых врагом.
 17. "bulletIDs" - это параметр в виде массива, содержащего ID пуль.
 18. "bullets" - это параметр в виде массива, содержащего объекты, которые содержат данные о пулях.
@@ -401,6 +402,6 @@ export function createEnemy(
         bulletSpeedX, bulletSpeedY, shootDelay,
         bulletOwner, bulletIDs, bullets,
         players, enemies, rocks,
-        generateEnemyID(enemyIDs)
+        enemyIDs, generateEnemyID(enemyIDs)
     ));
 };

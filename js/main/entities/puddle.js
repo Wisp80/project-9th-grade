@@ -83,19 +83,19 @@ class Puddle {
         них за пределы холста. Если это так, то корректируем все вершины многоугольника, который обозначает форму 
         лужи.*/
         for (let i = 0; i < this.vertices.length; i++) {
-            if (this.vertices[i].x <= 55) {
+            if (this.vertices[i].x <= 25) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x += canvasData.cellWidth * 2 };;
             };
 
-            if (this.vertices[i].x >= canvasData.canvasWidth - 55) {
+            if (this.vertices[i].x >= canvasData.canvasWidth - 25) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x -= canvasData.cellWidth * 2 };
             };
 
-            if (this.vertices[i].y <= 55) {
+            if (this.vertices[i].y <= 25) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y += canvasData.cellHeight * 2 };;
             };
 
-            if (this.vertices[i].y >= canvasData.canvasHeight - 55) {
+            if (this.vertices[i].y >= canvasData.canvasHeight - 25) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y -= canvasData.cellHeight * 2 };
             };
         };
@@ -137,10 +137,10 @@ class Puddle {
 Функция "generatePuddleID()" возвращает уникальный ID лужи.*/
 function generatePuddleID(puddleIDs) {
     /*Создаем ID для лужи при помощи метода "mathHelper.getRandomIntFromInterval()".*/
-    let puddleID = mathHelper.getRandomIntFromInterval(0, 1000).toString();
+    let puddleID = mathHelper.getRandomIntFromInterval(0, 1_000_000).toString();
     /*Проверяем не создали ли мы ID, который уже существует. Если это так, то пересоздаем ID для лужи до тех пор, пока 
     не получим уникальный ID.*/
-    while (puddleIDs.includes(puddleID)) { puddleID = mathHelper.getRandomIntFromInterval(0, 1000).toString() };
+    while (puddleIDs.includes(puddleID)) { puddleID = mathHelper.getRandomIntFromInterval(0, 1_000_000).toString() };
     /*Добавляем созданный ID лужи в массив, куда должны сохраняться ID луж.*/
     puddleIDs.push(puddleID);
     /*Возвращаем созданный ID лужи.*/

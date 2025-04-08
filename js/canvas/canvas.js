@@ -7,8 +7,8 @@ export const ctx = canvas.getContext('2d');
 
 /*Создаем объект, свойства которого содержат информацию о нашем холсте.*/
 export const canvasData = {
-    canvasWidth: 1600,
-    canvasHeight: 900,
+    canvasWidth: 1700,
+    canvasHeight: 780,
     cellWidth: 25,
     cellHeight: 25
 };

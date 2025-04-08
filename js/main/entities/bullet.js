@@ -19,7 +19,9 @@ import { game } from '../game.js';
 11. "enemies" - это параметр в виде массива, содержащего объекты, которые содержат данные о врагах.
 12. "rocks" - это параметр в виде массива, содержащего объекты, которые содержат данные о камнях.
 13. "bullets" - это параметр в виде массива, содержащего объекты, которые содержат данные о пулях.
-14. "ID" - это строковой параметр, указывающий ID пули.*/
+14. "bulletIDs" - это параметр в виде массива, содержащего ID пуль.
+15. "enemyIDs" - это параметр в виде массива, содержащего ID врагов.
+16. "ID" - это строковой параметр, указывающий ID пули.*/
 class Bullet {
     constructor(
         x, y, radius,
@@ -27,7 +29,7 @@ class Bullet {
         currentSpeedX, currentSpeedY,
         owner,
         players, enemies, rocks, bullets,
-        ID
+        bulletIDs, enemyIDs, ID
     ) {
         /*X-координата пули.*/
         this.x = x;
@@ -82,6 +84,10 @@ class Bullet {
         this.rocks = rocks;
         /*Массив, содержащий объекты, содержащие данные о пулях.*/
         this.bullets = bullets;
+        /*Массив, содержащий ID пуль.*/
+        this.bulletIDs = bulletIDs;
+        /*Массив, содержащий ID врагов.*/
+        this.enemyIDs = enemyIDs;
         /*ID пули.*/
         this.ID = ID;
     };
@@ -122,12 +128,14 @@ class Bullet {
 
         /*Если пуля уходит за пределы холста, то удаляем ее.*/
         if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+            this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
             this.bullets.splice(this.bullets.indexOf(this), 1);
         };
 
         /*Перебираем все камни и проверяем не пересекается ли пуля с одним из них. Если это так, то удаляем пулю.*/
         for (let i = 0; i < this.rocks.length; i++) {
             if (mathHelper.isPointInsidePolygon({ x: this.x, y: this.y }, this.rocks[i].vertices)) {
+                this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
                 this.bullets.splice(this.bullets.indexOf(this), 1);
             };
         };
@@ -139,7 +147,9 @@ class Bullet {
 
             for (const enemy of this.enemies) {
                 if (mathHelper.isPointInsidePolygon(bulletCenterPoint, enemy.vertices)) {
+                    this.enemyIDs.splice(this.enemyIDs.indexOf(enemy.ID), 1);
                     this.enemies.splice(this.enemies.indexOf(enemy), 1);
+                    this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
                     this.bullets.splice(this.bullets.indexOf(this), 1);
                 };
             };
@@ -167,6 +177,7 @@ class Bullet {
                 );
             };
 
+            this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
             this.bullets.splice(this.bullets.indexOf(this), 1);
         };
     };
@@ -219,10 +230,10 @@ class Bullet {
 Функция "generateBulletID()" возвращает уникальный ID пули.*/
 function generateBulletID(bulletIDs) {
     /*Создаем ID для пули при помощи метода "mathHelper.getRandomIntFromInterval()".*/
-    let bulletID = mathHelper.getRandomIntFromInterval(0, 1000).toString();
+    let bulletID = mathHelper.getRandomIntFromInterval(0, 1_000_000).toString();
     /*Проверяем не создали ли мы ID, который уже существует. Если это так, то пересоздаем ID для пули до тех пор, пока
     не получим уникальный ID.*/
-    while (bulletIDs.includes(bulletID)) { bulletID = mathHelper.getRandomIntFromInterval(0, 1000).toString() };
+    while (bulletIDs.includes(bulletID)) { bulletID = mathHelper.getRandomIntFromInterval(0, 1_000_000).toString() };
     /*Добавляем созданный ID пули в массив, куда должны сохраняться ID пуль.*/
     bulletIDs.push(bulletID);
     /*Возвращаем созданный ID пули.*/
@@ -247,6 +258,7 @@ function generateBulletID(bulletIDs) {
 12. "rocks" - это параметр в виде массива, содержащего объекты, которые содержат данные о камнях.
 13. "bullets" - это параметр в виде массива, содержащего объекты, которые содержат данные о пулях.
 14. "bulletIDs" - это параметр в виде массива, содержащего ID пуль.
+15. "enemyIDs" - это параметр в виде массива, содержащего ID врагов.
 
 Функция "createBullet()" ничего не возвращает.*/
 export function createBullet(
@@ -255,7 +267,7 @@ export function createBullet(
     currentSpeedX, currentSpeedY,
     owner,
     players, enemies, rocks, bullets,
-    bulletIDs
+    bulletIDs, enemyIDs
 ) {
     bullets.push(new Bullet(
         x, y, radius,
@@ -263,6 +275,6 @@ export function createBullet(
         currentSpeedX, currentSpeedY,
         owner,
         players, enemies, rocks, bullets,
-        generateBulletID(bulletIDs)
+        bulletIDs, enemyIDs, generateBulletID(bulletIDs)
     ));
 };
