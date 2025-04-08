@@ -155,7 +155,7 @@ class Bullet {
             )
         ) {
             if (!this.players.playerOne.tookDamageRecently) {
-                this.players.playerOne.loseHealthPoints();
+                this.players.playerOne.decreaseHealthPoints();
                 this.players.playerOne.tookDamageRecently = true;
 
                 const setTimeoutID = setTimeout(

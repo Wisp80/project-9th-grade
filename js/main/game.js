@@ -349,7 +349,7 @@ const players = {};
 /*
 x, y,
 width, height,
-speed, slowDebuffMultiplierб
+speed, slowDebuffMultiplier,
 healthPoints, takeDamageDelay,
 bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
 bulletSpeedX, bulletSpeedY, shootDelay,
@@ -359,7 +359,7 @@ players, enemies, rocks, puddles, bullets, bulletIDs
 players.playerOne = new Player(
     100, 400,
     50, 50,
-    15, 0.5,
+    15, 0.2,
     3, 1000,
     5, '#000000', 1, '#00ffea',
     15, 15, 300,
@@ -458,6 +458,7 @@ createEnemy(
 x, y,
 width, height,
 strokeStyle, lineWidth, fillStyle,
+gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
 numberOfVertices, clockwiseStepX, clockwiseStepY,
 rocks, rockIDs
 */
@@ -465,6 +466,7 @@ createRock(
     300, 350,
     150, 200,
     'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)',
+    7, 0.7, true, 0.9,
     6, 50, 100,
     rocks, rockIDs
 );
@@ -473,6 +475,7 @@ createRock(
     650, 350,
     150, 200,
     'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)',
+    7, 0.7, true, 0.8,
     6, 50, 100,
     rocks, rockIDs
 );
@@ -481,6 +484,7 @@ createRock(
     1150, 450,
     600, 600,
     'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)',
+    7, 0.7, true, 0.8,
     8, 100, 100,
     rocks, rockIDs
 );
@@ -491,13 +495,15 @@ createRock(
 x, y,
 width, height,
 strokeStyle, lineWidth, fillStyle,
+gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
 numberOfVertices, clockwiseStepX, clockwiseStepY,
 puddles, puddleIDs
 */
 createPuddle(
     500, 550,
     150, 200,
-    'rgba(50, 6, 94, 0.6)', 1, 'rgba(128, 18, 238, 0.6)',
+    'rgba(112, 17, 207, 0.466)', 1, 'rgba(128, 18, 238, 0.6)',
+    7, 0.7, false, 0.8,
     6, 50, 100,
     puddles, puddleIDs
 );

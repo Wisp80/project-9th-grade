@@ -307,11 +307,11 @@ class Enemy {
             /*Создаем переменную "verticesForInterpolation" для хранения массива объектов, содержащих координаты вершин, 
             который прошли через интерполяцию кадров. Мы это делаем целью осуществления плавной отрисовки при движении 
             врага.*/
-            const verticesForInterpolation = [];
+            const interpolatedVertices = [];
 
             /*Заполняем массив "verticesForInterpolation".*/
             for (let i = 0; i < this.vertices.length; i++) {
-                verticesForInterpolation.push(
+                interpolatedVertices.push(
                     {
                         x: this.previousVertices[i].x +
                             (this.vertices[i].x - this.previousVertices[i].x) * interpolationFactor,
@@ -323,10 +323,10 @@ class Enemy {
             };
 
             /*Отрисовываем врага с учетом интерполяции.*/
-            graphicsHelper.drawPolygonFromVertices(verticesForInterpolation, 1, 'yellow', this.color);
+            graphicsHelper.drawPolygonFromVertices(interpolatedVertices, 1, 'rgba(196, 193, 21, 0.336)', this.color);
         } else {
             /*Отрисовываем врага без учета интерполяции. Это нужно только для тестирования.*/
-            graphicsHelper.drawPolygonFromVertices(this.vertices, 1, 'yellow', this.color);
+            graphicsHelper.drawPolygonFromVertices(this.vertices, 1, 'rgba(196, 193, 21, 0.336)', this.color);
         };
 
     };

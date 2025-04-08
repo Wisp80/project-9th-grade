@@ -13,18 +13,26 @@ import { graphicsHelper } from '../../helpers/graphicsHelper.js';
 5. "strokeStyle" - это строковой параметр, указывающий цвет обводки камня.
 6. "lineWidth" - это числовой параметр, указывающий ширину овбодки камня.
 7. "fillStyle" - это строковой параметр, указывающий цвет заливки камня.
-8. "numberOfVertices" - это числовой параметр, указывающий количество вершин многоугольника, который обозначает форму 
+8. "gradientSteps" - это числовой параметр, указывающий как много цветов должно быть при использовании ступенчатого 
+градиента.
+9. "darkeningStep" - это числовой параметр, указывающий силу затемнения цветов в ступенчатом градиенте.
+10. "isGradientReversed" - это булев параметр, указывающий должны ли идти цвета в ступенчатом градиент от темного к 
+светлому или от светлого к темному.
+11. "lastLayerFactor" - это числовой параметр, указывающий коэффициент уменьшения, который определяет насколько сильно 
+будет уменьшен последний слой камня, то есть самый внутренний слой, при ступенчатом градиенте.
+12. "numberOfVertices" - это числовой параметр, указывающий количество вершин многоугольника, который обозначает форму 
 камня.
-9. "clockwiseStepX" - это числовой параметр, указывающий максимальное расстояние сдвига по оси X вершин многоугольника, 
+13. "clockwiseStepX" - это числовой параметр, указывающий максимальное расстояние сдвига по оси X вершин многоугольника, 
 который обозначает форму камня, друг от друга.
-10. "clockwiseStepY" - это числовой параметр, указывающий максимальное расстояние сдвига по оси Y вершин многоугольника, 
+14. "clockwiseStepY" - это числовой параметр, указывающий максимальное расстояние сдвига по оси Y вершин многоугольника, 
 который обозначает форму камня, друг от друга.
-11. "ID" - это строковой параметр, указывающий ID камня.*/
+15. "ID" - это строковой параметр, указывающий ID камня.*/
 class Rock {
     constructor(
         x, y,
         width, height,
         strokeStyle, lineWidth, fillStyle,
+        gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
         numberOfVertices, clockwiseStepX, clockwiseStepY,
         ID
     ) {
@@ -42,6 +50,16 @@ class Rock {
         this.lineWidth = lineWidth;
         /*Цвет заливки камня.*/
         this.fillStyle = fillStyle;
+        /*Свойство, которое указывает как много цветов должно быть при использовании ступенчатого градиента.*/
+        this.gradientSteps = gradientSteps;
+        /*Сила затемнения цветов в ступенчатом градиенте.*/
+        this.darkeningStep = darkeningStep;
+        /*Флаг, указывающий должны ли идти цвета в ступенчатом градиент от темного к светлому или от светлого к 
+        темному.*/
+        this.isGradientReversed = isGradientReversed;
+        /*Коэффициент уменьшения, который определяет насколько сильно будет уменьшен последний слой камня, то есть самый 
+        внутренний слой, при ступенчатом градиенте.*/
+        this.lastLayerFactor = lastLayerFactor;
         /*Количество вершин многоугольника, который обозначает форму камня.*/
         this.numberOfVertices = numberOfVertices;
         /*Параметр, указывающий максимальное расстояние сдвига по оси X вершин многоугольника, который обозначает форму 
@@ -100,98 +118,14 @@ class Rock {
         "graphicsHelper.drawPolygonFromVertices()".*/
         // graphicsHelper.drawPolygonFromVertices(this.vertices, this.lineWidth, this.strokeStyle, this.fillStyle);
 
-
-        // const baseColor = '#777777';
-        const baseColor = this.fillStyle;
-        const steps = 7;
-        const center = { x: 0, y: 0 };
-
-        // 1. Находим центр камня
-        for (const vertice of this.vertices) {
-            center.x += vertice.x;
-            center.y += vertice.y;
-        };
-
-        center.x /= this.vertices.length;
-        center.y /= this.vertices.length;
-
-        // 2. Генерируем оттенки (с учетом прозрачности)
-        const colors = generateColorGradient(baseColor, steps);
-
-        // 3. Размеры слоев
-        const scales = Array.from(
-            { length: steps },
-            (_, i) => 1.0 - (i / (steps - 1)) * 0.8
+        /*Отрисовываем многоугольник со ступенчатым градиентом, который обозначает форму камня, при помощи метода 
+        "graphicsHelper.drawPolygonFromVerticesWithStepGradient()".*/
+        graphicsHelper.drawPolygonFromVerticesWithStepGradient(
+            this.vertices,
+            this.fillStyle, this.gradientSteps, this.darkeningStep, this.isGradientReversed,
+            this.lastLayerFactor,
+            this.strokeStyle, this.lineWidth
         );
-
-        // 4. Рисуем ступени
-        for (let i = 0; i < steps; i++) {
-            const path = new Path2D();
-
-            const scaledVertices = this.vertices.map(
-                v => (
-                    {
-                        x: center.x + (v.x - center.x) * scales[i],
-                        y: center.y + (v.y - center.y) * scales[i]
-                    }
-                )
-            );
-
-            path.moveTo(scaledVertices[0].x, scaledVertices[0].y);
-
-            for (let j = 1; j < scaledVertices.length; j++) {
-                path.lineTo(scaledVertices[j].x, scaledVertices[j].y);
-            };
-
-            path.closePath();
-
-            // Заливка и обводка
-            ctx.fillStyle = colors[i];
-            ctx.fill(path);
-            ctx.strokeStyle = i === 0 ? '#000000' : 'rgba(0,0,0,0.3)';
-            ctx.lineWidth = 1;
-            ctx.stroke(path);
-        };
-
-        // Генератор градиента (поддерживает HEX и RGBA)
-        function generateColorGradient(baseColor, steps) {
-            const parsed = parseColor(baseColor);
-            let [r, g, b, a = 1] = parsed; // По умолчанию alpha = 1
-            const colors = [];
-
-            for (let i = 0; i < steps; i++) {
-                const factor = i / (steps - 1); // От 0 (темный) до 1 (светлый)
-                const darkenFactor = 1 - factor * 0.7;
-
-                const newR = Math.floor(r * darkenFactor);
-                const newG = Math.floor(g * darkenFactor);
-                const newB = Math.floor(b * darkenFactor);
-                const newA = a; // Сохраняем исходную прозрачность
-
-                colors.push(`rgba(${newR}, ${newG}, ${newB}, ${newA})`);
-            };
-
-            return colors.reverse(); // Темные снаружи
-        };
-
-        // Парсит HEX (#777777) или RGBA (rgba(119,119,119,0.5))
-        function parseColor(color) {
-            if (color.startsWith('#')) {
-                const hex = color.slice(1);
-
-                return [
-                    parseInt(hex.substring(0, 2), 16),
-                    parseInt(hex.substring(2, 4), 16),
-                    parseInt(hex.substring(4, 6), 16),
-                    1 // alpha
-                ];
-            } else if (color.startsWith('rgba')) {
-                const match = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
-                return match ? match.slice(1, 5).map(Number) : [119, 119, 119, 1];
-            };
-
-            return [119, 119, 119, 1]; // fallback
-        };
     };
 };
 
@@ -224,20 +158,28 @@ function generateRockID(rockIDs) {
 5. "strokeStyle" - это строковой параметр, указывающий цвет обводки камня.
 6. "lineWidth" - это числовой параметр, указывающий ширину овбодки камня.
 7. "fillStyle" - это строковой параметр, указывающий цвет заливки камня.
-8. "numberOfVertices" - это числовой параметр, указывающий количество вершин многоугольника, который обозначает форму 
+8. "gradientSteps" - это числовой параметр, указывающий как много цветов должно быть при использовании ступенчатого 
+градиента.
+9. "darkeningStep" - это числовой параметр, указывающий силу затемнения цветов в ступенчатом градиенте.
+10. "isGradientReversed" - это булев параметр, указывающий должны ли идти цвета в ступенчатом градиент от темного к 
+светлому или от светлого к темному.
+11. "lastLayerFactor" - это числовой параметр, указывающий коэффициент уменьшения, который определяет насколько сильно 
+будет уменьшен последний слой камня, то есть самый внутренний слой, при ступенчатом градиенте.
+12. "numberOfVertices" - это числовой параметр, указывающий количество вершин многоугольника, который обозначает форму 
 камня.
-9. "clockwiseStepX" - это числовой параметр, указывающий максимальное расстояние сдвига по оси X вершин многоугольника, 
+13. "clockwiseStepX" - это числовой параметр, указывающий максимальное расстояние сдвига по оси X вершин многоугольника, 
 который обозначает форму камня, друг от друга.
-10. "clockwiseStepY" - это числовой параметр, указывающий максимальное расстояние сдвига по оси Y вершин многоугольника, 
+14. "clockwiseStepY" - это числовой параметр, указывающий максимальное расстояние сдвига по оси Y вершин многоугольника, 
 который обозначает форму камня, друг от друга.
-11. "rocks" - это параметр в виде массива, содержащего объекты, которые содержат данные о камнях.
-12. "rockIDs" - это параметр в виде массива, содержащего ID камней.
+15. "rocks" - это параметр в виде массива, содержащего объекты, которые содержат данные о камнях.
+16. "rockIDs" - это параметр в виде массива, содержащего ID камней.
 
 Функция "createRock()" ничего не возвращает.*/
 export function createRock(
     x, y,
     width, height,
     strokeStyle, lineWidth, fillStyle,
+    gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
     numberOfVertices, clockwiseStepX, clockwiseStepY,
     rocks, rockIDs
 ) {
@@ -245,6 +187,7 @@ export function createRock(
         x, y,
         width, height,
         strokeStyle, lineWidth, fillStyle,
+        gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
         numberOfVertices, clockwiseStepX, clockwiseStepY,
         generateRockID(rockIDs)
     ));
