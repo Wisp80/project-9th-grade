@@ -258,3 +258,5 @@ import { mathHelper } from '../helpers/mathHelper.js';
 // ];
 
 // console.log(mathHelper.isPointInsidePolygon(point06, array04)); // false
+
+/*--------------------------------------------------------------------------------------------------------------------*/

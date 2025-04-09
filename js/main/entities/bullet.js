@@ -129,7 +129,7 @@ class Bullet {
         this.moveY();
 
         /*Если пуля уходит за пределы холста, то удаляем ее.*/
-        if (this.x < 0 || this.x > canvasData.canavasWidth || this.y < 0 || this.y > canvasData.canvasHeight) {
+        if (this.x < 0 || this.x > canvasData.canvasWidth || this.y < 0 || this.y > canvasData.canvasHeight) {
             this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
             this.bullets.splice(this.bullets.indexOf(this), 1);
         };

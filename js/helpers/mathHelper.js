@@ -1,6 +1,7 @@
 'use strict';
 import { ctx, canvasData } from '../canvas/canvas.js';
 import { graphicsHelper } from './graphicsHelper.js';
+import { game } from '../main/game.js';
 
 export const mathHelper = {
     /*Метод "getRandomIntFromInterval()" генерирует случайное целое число в указанном пределе.
@@ -35,7 +36,12 @@ export const mathHelper = {
         return pointX >= minX && pointX <= maxX && pointY >= minY && pointY <= maxY ? true : false;
     },
 
-    /**/
+    /*Метод "removeDuplicatesFromPoints()" удаляет дубликаты точек из массива точек.
+    
+    Метод "removeDuplicatesFromPoints()" принимает следующие параметры:
+    1. "points" - это параметр в виде массива объектов, содержащих целочисленные координаты точек.
+
+    Метод "removeDuplicatesFromPoints()" возвращает массива точек без дубликатов точек.*/
     removeDuplicatesFromPoints: function (points) {
         /*Избавляемся от дубликатов точек, если таковые имеются. Во внешнем цикле for перебираем все точки в массиве 
         "points".*/
@@ -326,7 +332,7 @@ export const mathHelper = {
 
         /*Возвращаем массив объектов, содержащих рассчитанные координаты вершин многоугольника.*/
         return vertices;
-    },    
+    },
 
     /*Метод "findIntPointOnLineSegment()" находит точки с целочисленными координатами на отрезке, используя линейную 
     интерполяцию. Линейная интерполяция - это метод нахождения промежуточных значений между двумя известными точками на 
@@ -624,8 +630,13 @@ export const mathHelper = {
         };
 
         /*Проверяем не получается ли так, что все точки в массиве "intersectionPoints" совпадают с вершинами 
-        многоугольника. Если это так, то возвращаем false, как знак того, что точка находится снаружи многоугольника.*/
-        if (intersectionPoints.length === pointsEqualToPolygonVerticesCount) { return false };
+        многоугольника, при этом отрезок луча находится либо выше минимальной X-координаты многоугольника, либо ниже 
+        максимальной X-координаты. Если это так, то возвращаем false, как знак того, что точка находится снаружи 
+        многоугольника.*/
+        if (
+            (point.x <= minX || point.x >= maxX) &&
+            intersectionPoints.length === pointsEqualToPolygonVerticesCount
+        ) { return false };
 
         /*Выводим информацию о точке в консоль. Это нужно только для тестирования.*/
         // console.log('Point:');

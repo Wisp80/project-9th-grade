@@ -210,8 +210,9 @@ export const game = {
         controls, canvasData, game,
         createBullet, createEnemy, createRock, createPuddle
     ) {
+        /*Если игра еще не закончилась, то рассчитываем новый кадр.*/
         if (!this.finished) {
-            /**/
+            /*Если персонаж убил всех врагов, то генерируем новый уровень при помощи метода "generateLevel()".*/
             if (this.enemies.length === 0) { this.generateLevel(canvasData, createEnemy, createRock, createPuddle) };
 
             /*Обрабатываем нажатые кнопки игроком при помощи метода "players.playerOne.processControls()".*/
@@ -225,6 +226,9 @@ export const game = {
             for (const enemy of this.enemies) { enemy.shoot(game, createBullet) };
             /*Обрабатываем движение пуль при помощи метода "bullet.move()".*/
             for (const bullet of this.bullets) { bullet.move(canvasData, game) };
+        } else {
+            /*Если игра закончилась, то сбрасываем все данные игры на стартовые при помощи метода "resetGameData()".*/
+            this.resetGameData();
         };
     },
 
@@ -241,7 +245,7 @@ export const game = {
         /*Отрисовываем сетку на экране.*/
         graphicsHelper.drawGrid(ctx, canvasData);
 
-        /**/
+        /*Если игра еще не закончилась, то отрисовываем новый кадр.*/
         if (!this.finished) {
             /*Отрисовываем лужи при помощи метода "puddle.draw()".*/
             for (const puddle of this.puddles) { puddle.draw(ctx) };
@@ -254,7 +258,7 @@ export const game = {
             /*Отрисовываем врагов при помощи метода "enemy.draw()".*/
             for (const enemy of this.enemies) { enemy.draw(ctx, interpolationFactor, game) };
         } else {
-            /**/
+            /*Если игра закончилась, то отрисовываем экран конца игры при помощи метода "drawGameOverScreen()".*/
             this.drawGameOverScreen(ctx, canvasData);
         };
 
@@ -418,15 +422,22 @@ export const game = {
     puddles: [],
     /*Создаем свойство "puddleIDs" для хранения массива, содержащего ID луж.*/
     puddleIDs: [],
-    /*Свойство "currentLevel" нужно для хранения текущего номера уровня в игре.*/
+    /*Создаем cвойство "currentLevel" для хранения текущего номера уровня в игре.*/
     currentLevel: 0,
-    /**/
+    /*Создаем cвойство "currrentEnemiesCount" для указания количества врагов на текущем уровне.*/
     currrentEnemiesCount: 4,
     /**/
+    currentEnemiesSpeed: 0,
+    /**/
+    currentEnemiesShotDelay: 0,
+    /**/
+    currentEnemiesBulletSpeed: 0,
+    /*Создаем cвойство "currentRocksCount" для указания количества камней на текущем уровне.*/
     currentRocksCount: 4,
-    /**/
+    /*Создаем cвойство "currentPuddlesCount" для указания количества луж на текущем уровне.*/
     currentPuddlesCount: 4,
-    /**/
+    
+    /*Создаем свойство "finished", которое обозначает флаг, указывающий закончилась игра или нет.*/
     finished: false,
 
     /**/
@@ -448,7 +459,7 @@ export const game = {
         if (this.currentLevel % 3 === 0) { this.currrentEnemiesCount++ };
 
         if (this.currentLevel % 5 === 0) {
-            if (this.currentRocksCount > 0) { this.currentRocksCount--; };
+            if (this.currentRocksCount > 0) { this.currentRocksCount-- };
             this.currentPuddlesCount++;
         };
 
@@ -468,7 +479,7 @@ export const game = {
                 mathHelper.getRandomIntFromInterval(50, 1500), mathHelper.getRandomIntFromInterval(50, 580),
                 mathHelper.getRandomIntFromInterval(200, 600), mathHelper.getRandomIntFromInterval(200, 600),
                 40,
-                mathHelper.getRandomIntFromInterval(5, 8), 50, 100, canvasData,
+                mathHelper.getRandomIntFromInterval(4, 8), 50, 100, canvasData,
                 8, '#000000', 1, '#ff00d4',
                 10, 10, mathHelper.getRandomIntFromInterval(20, 100),
                 'enemy', this.bulletIDs, this.bullets,
@@ -530,8 +541,7 @@ export const game = {
     },
 
     /**/
-    restart: function () {
-        this.finished = false;
+    resetGameData: function () {
         this.currentLevel = 0;
         this.currrentEnemiesCount = 4;
         this.currentRocksCount = 4;
@@ -548,6 +558,14 @@ export const game = {
         this.rockIDs.length = 0;
         this.puddles.length = 0;
         this.puddleIDs.length = 0;
+    },
+
+    /*Метод "restart()" сбрасывает все данные игры на стартовые.    
+    Метод "restart()" не принимает никаких параметров.
+    Метод "restart()" ничего не возвращает.*/
+    restart: function () {
+        this.finished = false;
+        this.resetGameData();
     },
 };
 
@@ -570,7 +588,7 @@ game.players.playerOne = new Player(
     11, 0.4,
     3, 50,
     5, '#000000', 1, '#00ffea',
-    15, 15, 20,
+    15, 15, 2,
     'player',
     game.players, game.enemies, game.rocks, game.puddles, game.bullets,
     game.bulletIDs, game.enemyIDs
