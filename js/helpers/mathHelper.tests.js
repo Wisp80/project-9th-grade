@@ -1,23 +1,47 @@
 'use strict';
 import { mathHelper } from '../helpers/mathHelper.js';
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 6, y: 2 }, { x: 3, y: 1 }, { x: 4, y: 5 })); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 4 }, { x: 5, y: 1 }, { x: 4, y: 2 }, { x: 5, y: 4 })); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 2, y: 5 }, { x: 6, y: 2 }, { x: 3, y: 1 }, { x: 4, y: 5 }
+// )); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 2, y: 4 }, { x: 5, y: 1 }, { x: 4, y: 2 }, { x: 5, y: 4 }
+// )); // true
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 5, y: 2 }, { x: 3, y: 1 }, { x: 4, y: 3 })); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 4, y: 2 }, { x: 3, y: 1 }, { x: 7, y: 5 })); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 2, y: 5 }, { x: 5, y: 2 }, { x: 3, y: 1 }, { x: 4, y: 3 }
+// )); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 2, y: 5 }, { x: 4, y: 2 }, { x: 3, y: 1 }, { x: 7, y: 5 }
+// )); // true
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 4, y: 5 }, { x: 7, y: 2 }, { x: 1, y: 2 }, { x: 5, y: 6 })); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 4, y: 1 }, { x: 5, y: 3 }, { x: 6, y: 5 })); // false
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 4, y: 5 }, { x: 7, y: 2 }, { x: 1, y: 2 }, { x: 5, y: 6 }
+// )); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 2, y: 5 }, { x: 4, y: 1 }, { x: 5, y: 3 }, { x: 6, y: 5 }
+// )); // false
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 4, y: 1 }, { x: 5, y: 5 }, { x: 7, y: 2 })); // false
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 2 }, { x: 4, y: 2 }, { x: 6, y: 2 }, { x: 9, y: 2 })); // false
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 2, y: 5 }, { x: 4, y: 1 }, { x: 5, y: 5 }, { x: 7, y: 2 }
+// )); // false
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 2, y: 2 }, { x: 4, y: 2 }, { x: 6, y: 2 }, { x: 9, y: 2 }
+// )); // false
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 1, y: 2 }, { x: 3, y: 2 }, { x: 3, y: 2 }, { x: 6, y: 2 })); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 1, y: 1 }, { x: 3, y: 3 }, { x: 3, y: 3 }, { x: 5, y: 5 })); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 3, y: 2 }, { x: 6, y: 2 }
+// )); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 1, y: 1 }, { x: 3, y: 3 }, { x: 3, y: 3 }, { x: 5, y: 5 }
+// )); // true
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 1 }, { x: 4, y: 3 }, { x: 4, y: 3 }, { x: 7, y: 3 })); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 1 }, { x: 4, y: 4 }, { x: 4, y: 4 }, { x: 8, y: 2 })); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 2, y: 1 }, { x: 4, y: 3 }, { x: 4, y: 3 }, { x: 7, y: 3 }
+// )); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 2, y: 1 }, { x: 4, y: 4 }, { x: 4, y: 4 }, { x: 8, y: 2 }
+// )); // true
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
@@ -134,9 +158,7 @@ import { mathHelper } from '../helpers/mathHelper.js';
 //     ]
 // )); // true
 
-
-
-
+/*--------------------------------------------------------------------------------------------------------------------*/
 
 // console.log(mathHelper.doTwoPolygonsIntersect(
 //     [
@@ -163,6 +185,15 @@ import { mathHelper } from '../helpers/mathHelper.js';
 //     { x: 1, y: 400 }, { x: 51, y: 400 },
 //     { x: 1000, y: 1000 }, { x: 1000, y: 1000 })
 // ); // false
+
+// console.log(mathHelper.removeDuplicatesFromPoints(
+//     [
+//         { x: 725, y: 300 }, { x: 790, y: 325 }, { x: 790, y: 375 }, { x: 750, y: 425 },
+//         { x: 725, y: 450 }, { x: 675, y: 465 }, { x: 625, y: 400 }, { x: 575, y: 325 },
+//         { x: 536, y: 275 }, { x: 575, y: 211 }, { x: 650, y: 211 }, { x: 650, y: 211 },
+//         { x: 700, y: 211 }
+//     ]
+// ));
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 

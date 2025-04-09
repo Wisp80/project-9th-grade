@@ -1,7 +1,5 @@
 'use strict';
-import { canvas, ctx } from '../../canvas/canvas.js';
 import { mathHelper } from '../../helpers/mathHelper.js';
-import { game } from '../game.js';
 
 /*Класс "Bullet" создает объекты, содержащие данные о пуле.
 
@@ -120,14 +118,18 @@ class Bullet {
 
     /*Метод "move()" совмещает вызовы методов "moveX()" и "moveY()", дополнительно обрабатывая взаимодействие пули со
     сторонами холста, камнями, врагами и персонажем.
-    Метод "move()" не принимает никаких параметров.
+    
+    Метод "move()" принимает следующие параметры:
+    1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+    2. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+
     Метод "move()" ничего не возвращает.*/
-    move() {
+    move(canvasData, game) {
         this.moveX();
         this.moveY();
 
         /*Если пуля уходит за пределы холста, то удаляем ее.*/
-        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+        if (this.x < 0 || this.x > canvasData.canavasWidth || this.y < 0 || this.y > canvasData.canvasHeight) {
             this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
             this.bullets.splice(this.bullets.indexOf(this), 1);
         };
@@ -178,11 +180,13 @@ class Bullet {
     /*Метод "draw()" отрисовывает пулю.
 
     Метод "draw()" принимает следующие параметры:
-    1. "interpolationFactor" - это числовой параметр, указывающий коэффициет интерполяции для создания промежуточных 
+    1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+    2. "interpolationFactor" - это числовой параметр, указывающий коэффициет интерполяции для создания промежуточных 
     кадров с целью осуществления плавной отрисовки при движении.
+    3. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
 
     Метод "draw()" ничего не возвращает.*/
-    draw(interpolationFactor) {
+    draw(ctx, interpolationFactor, game) {
         /*Создаем путь для отрисовки пули.*/
         ctx.beginPath();
 

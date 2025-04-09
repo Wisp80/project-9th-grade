@@ -1,11 +1,7 @@
 'use strict';
-import { ctx, canvasData } from '../canvas/canvas.js';
 import { mathHelper } from '../helpers/mathHelper.js';
 import { graphicsHelper } from '../helpers/graphicsHelper.js';
 import { Player } from './entities/player.js';
-import { createEnemy } from './entities/enemy.js';
-import { createRock } from './entities/rock.js';
-import { createPuddle } from './entities/puddle.js';
 
 /*Объект "game" представляет из себя главный объект игры, обрабатывающий все данные игры.*/
 export const game = {
@@ -61,15 +57,30 @@ export const game = {
 
     Метод "gameLoop()" принимает следующие параметры:
     1. "timestamp" - это числовой параметр, указывающий время текущего вызова метода "gameLoop()".
+    2. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+    3. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+    4. "controls" - это параметр в виде объекта, обрабатывающего нажатие и отжатие кнопок управления в игре.
+    5. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+    6. "createBullet" - это параметр в виде функции, которая создает объект, содержащий данные о пуле, на основе класса 
+    "Bullet" и помещает этот объект в массив, куда должны сохраняться такие объекты.
+    7. "createEnemy" - это параметр в виде функции, которая создает объект, содержащий данные о враге, на основе класса 
+    "Enemy" и помещает этот объект в массив, куда должны сохраняться такие объекты.
+    8. "createRock" - это параметр в виде функции, которая создает объект, содержащий данные о камне, на основе класса 
+    "Rock" и помещает этот объект в массив, куда должны сохраняться такие объекты.
+    9. "createPuddle" - это параметр в виде функции, которая создает объект, содержащий данные о луже, на основе класса 
+    "Puddle" и помещает этот объект в массив, куда должны сохраняться такие объекты.
 
     Метод "gameLoop()" ничего не возвращает.*/
-    gameLoop: function (timestamp) {
+    gameLoop: function (
+        timestamp, ctx, canvasData, controls, game,
+        createBullet, createEnemy, createRock, createPuddle
+    ) {
         /*Подчишаем работы предыдущего вызова функции "requestAnimationFrame()" при помощи функции 
         "cancelAnimationFrame()".*/
         cancelAnimationFrame(this.rafID);
 
         /*Проверяем не умер ли персонаж. Если это так, то сообщаем, что игра окончена.*/
-        if (players.playerOne.healthPoints <= 0) { this.finished = true };
+        if (this.players.playerOne.healthPoints <= 0) { this.finished = true };
 
         /*Функция "requestAnimationFrame()" принимает в качестве параметра callback-функцию. Функция 
         "requestAnimationFrame()" сама решает когда нужно вызывать переданную в нее callback-функцию.
@@ -101,7 +112,12 @@ export const game = {
         
         Рекурсивно вызываем функцию "requestAnimationFrame()", которая будет рекурсивно вызывать метод "gameLoop()", что
         приведит к бесконченому запуску циклов игры.*/
-        this.rafID = requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
+        this.rafID = requestAnimationFrame(
+            (timestamp) => this.gameLoop(
+                timestamp, ctx, canvasData, controls, game,
+                createBullet, createEnemy, createRock, createPuddle
+            )
+        );
 
         /*Рассчитываем текущее значение FPS для отрисованных кадров при помощи метода "updateRenderedFPS()".*/
         this.updateRenderedFPS(timestamp);
@@ -135,7 +151,9 @@ export const game = {
             this.currentFrameSteps < this.maxStepsPerFrame
         ) {
             /*Рассчитываем данные для следующего кадра при помощи метода "prepareDataForNextFrame()".*/
-            this.prepareDataForNextFrame();
+            this.prepareDataForNextFrame(
+                controls, canvasData, game,
+                createBullet, createEnemy, createRock, createPuddle);
 
             /*Поскольку рассчитали данные для одного кадра, то вычитаем из времени, накопленного для рассчета данных для 
             кадров, время, необходимое на рассчет данных для одного кадра.*/
@@ -169,62 +187,83 @@ export const game = {
 
         /*Отрисовываем данные для следующего кадра при помощи метода "renderPreparedDataForNextFrame()", используя 
         коэффициент интерполяции.*/
-        this.renderPreparedDataForNextFrame(interpolationFactor);
+        this.renderPreparedDataForNextFrame(ctx, canvasData, interpolationFactor, game);
     },
 
     /*Метод "prepareDataForNextFrame()" подготавливает данные для следующего кадра.
-    Метод "prepareDataForNextFrame()" не принимает никаких параметров.
+    
+    Метод "prepareDataForNextFrame()" принимает следующие параметры:
+    1. "controls" - это параметр в виде объекта, обрабатывающего нажатие и отжатие кнопок управления в игре.
+    2. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+    3. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+    4. "createBullet" - это параметр в виде функции, которая создает объект, содержащий данные о пуле, на основе класса 
+    "Bullet" и помещает этот объект в массив, куда должны сохраняться такие объекты.
+    5. "createEnemy" - это параметр в виде функции, которая создает объект, содержащий данные о враге, на основе класса 
+    "Enemy" и помещает этот объект в массив, куда должны сохраняться такие объекты.
+    6. "createRock" - это параметр в виде функции, которая создает объект, содержащий данные о камне, на основе класса 
+    "Rock" и помещает этот объект в массив, куда должны сохраняться такие объекты.
+    7. "createPuddle" - это параметр в виде функции, которая создает объект, содержащий данные о луже, на основе класса 
+    "Puddle" и помещает этот объект в массив, куда должны сохраняться такие объекты.
+
     Метод "prepareDataForNextFrame()" ничего не возвращает.*/
-    prepareDataForNextFrame: function () {
+    prepareDataForNextFrame: function (
+        controls, canvasData, game,
+        createBullet, createEnemy, createRock, createPuddle
+    ) {
         if (!this.finished) {
             /**/
-            if (enemies.length === 0) { this.generateLevel() };
+            if (this.enemies.length === 0) { this.generateLevel(canvasData, createEnemy, createRock, createPuddle) };
 
             /*Обрабатываем нажатые кнопки игроком при помощи метода "players.playerOne.processControls()".*/
-            players.playerOne.processControls();
-            /*Обрабатываем движение персонажа на основе нажатых кнопок игроком.*/
-            players.playerOne.move();
+            this.players.playerOne.processControls(controls, game, createBullet);
+            /*Обрабатываем движение персонажа на основе нажатых кнопок игроком при помощи метода 
+            "players.playerOne.move()".*/
+            this.players.playerOne.move(canvasData, game);
             /*Обрабатываем движение врагов при помощи метода "enemy.move()".*/
-            for (const enemy of enemies) { enemy.move() };
+            for (const enemy of this.enemies) { enemy.move(canvasData, game) };
             /*Обрабатываем стрельбу врагов при помощи метода "enemy.shoot()".*/
-            for (const enemy of enemies) { enemy.shoot() };
+            for (const enemy of this.enemies) { enemy.shoot(game, createBullet) };
             /*Обрабатываем движение пуль при помощи метода "bullet.move()".*/
-            for (const bullet of bullets) { bullet.move() };
+            for (const bullet of this.bullets) { bullet.move(canvasData, game) };
         };
     },
 
     /*Метод "renderPreparedDataForNextFrame()" отрисовывает подготавленные данные для следующего кадра.
-    Метод "renderPreparedDataForNextFrame()" не принимает никаких параметров.
+
+    Метод "renderPreparedDataForNextFrame()" принимает следующие параметры:
+    1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+    2. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+
     Метод "renderPreparedDataForNextFrame()" ничего не возвращает.*/
-    renderPreparedDataForNextFrame: function (interpolationFactor) {
+    renderPreparedDataForNextFrame: function (ctx, canvasData, interpolationFactor, game) {
         /*Очищаем экран игры при помощи метода "graphicsHelper.clearScreen()".*/
-        graphicsHelper.clearScreen('rgba(125, 109, 76, 1)');
+        graphicsHelper.clearScreen(ctx, canvasData, 'rgba(125, 109, 76, 1)');
         /*Отрисовываем сетку на экране.*/
-        graphicsHelper.drawGrid();
+        graphicsHelper.drawGrid(ctx, canvasData);
 
         /**/
         if (!this.finished) {
             /*Отрисовываем лужи при помощи метода "puddle.draw()".*/
-            for (const puddle of puddles) { puddle.draw() };
+            for (const puddle of this.puddles) { puddle.draw(ctx) };
             /*Отрисовываем камни при помощи метода "rock.draw()".*/
-            for (const rock of rocks) { rock.draw() };
+            for (const rock of this.rocks) { rock.draw(ctx) };
             /*Отрисовываем пули при помощи метода "bullet.draw()".*/
-            for (const bullet of bullets) { bullet.draw(interpolationFactor) };
+            for (const bullet of this.bullets) { bullet.draw(ctx, interpolationFactor, game) };
             /*Отрисовываем персонажа при помощи метода "players.playerOne.draw()".*/
-            players.playerOne.draw(interpolationFactor);
+            this.players.playerOne.draw(ctx, interpolationFactor, game);
             /*Отрисовываем врагов при помощи метода "enemy.draw()".*/
-            for (const enemy of enemies) { enemy.draw(interpolationFactor) };
+            for (const enemy of this.enemies) { enemy.draw(ctx, interpolationFactor, game) };
         } else {
             /**/
-            this.drawGameOverScreen();
+            this.drawGameOverScreen(ctx, canvasData);
         };
 
         /*Отрисовываем текущее значение FPS при помощи метода "drawFPS()".*/
-        this.drawFPS();
+        this.drawFPS(ctx, canvasData);
         /*Отрисовываем текущий уровень в игре при помощи метода "drawCurrentLevel()".*/
-        this.drawCurrentLevel();
+        this.drawCurrentLevel(ctx, canvasData);
         /*Отрисовываем очки здоровья персонажа при помощи метода "drawPlayerHealthPoints()".*/
-        this.drawPlayerHealthPoints();
+        this.drawPlayerHealthPoints(ctx);
     },
 
     /*Метод "updateCalculatedFPS()" рассчитывает текущее значение FPS для рассчитанных кадров.
@@ -274,9 +313,13 @@ export const game = {
     },
 
     /*Метод "drawFPS()" отрисовывает текущее значение FPS.
-    Метод "drawFPS()" не принимает никаких параметров.
+    
+    Метод "drawFPS()" принимает следующие параметры:
+    1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+    2. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+
     Метод "drawFPS()" ничего не возвращает.*/
-    drawFPS: function () {
+    drawFPS: function (ctx, canvasData) {
         ctx.fillStyle = '#c8ff00';
         ctx.font = '30px serif';
         ctx.fillText(`Calculated FPS: ${this.calculatedFramesFPS}`, canvasData.canvasWidth - 250, 35);
@@ -287,25 +330,32 @@ export const game = {
     },
 
     /*Метод "drawCurrentLevel()" отрисовывает текущий уровень в игре.
-    Метод "drawCurrentLevel()" не принимает никаких параметров.
+    
+    Метод "drawCurrentLevel()" принимает следующие параметры:
+    1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+    2. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+
     Метод "drawCurrentLevel()" ничего не возвращает.*/
-    drawCurrentLevel: function () {
+    drawCurrentLevel: function (ctx, canvasData) {
         ctx.fillStyle = '#ff4800';
         ctx.font = '30px serif';
         ctx.fillText(`LEVEL: ${this.currentLevel}`, canvasData.canvasWidth / 2 - 72, 35);
     },
 
     /*Метод "drawPlayerHealthPoints()" отрисовывает текущее количество очков здоровья персонажа.
-    Метод "drawPlayerHealthPoints()" не принимает никаких параметров.
+    
+    Метод "drawPlayerHealthPoints()" принимает следующие параметры:
+    1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+
     Метод "drawPlayerHealthPoints()" ничего не возвращает.*/
-    drawPlayerHealthPoints: function () {
+    drawPlayerHealthPoints: function (ctx) {
         ctx.fillStyle = '#66ff00';
         ctx.font = '30px serif';
-        ctx.fillText(`HP: ${players.playerOne.healthPoints}`, 25, 35);
+        ctx.fillText(`HP: ${this.players.playerOne.healthPoints}`, 25, 35);
     },
 
     /**/
-    drawGameOverScreen: function () {
+    drawGameOverScreen: function (ctx, canvasData) {
         ctx.fillStyle = '#ff4800';
         ctx.font = '30px serif';
         ctx.fillText(
@@ -316,7 +366,10 @@ export const game = {
     },
 
     /**/
-    initializeMenuButtonsListening: function () {
+    initializeMenuButtonsListening: function (
+        ctx, canvasData, controls, game,
+        createBullet, createEnemy, createRock, createPuddle
+    ) {
         document.getElementsByClassName('interpolation-on-button')[0]
             .addEventListener(
                 'click',
@@ -332,7 +385,12 @@ export const game = {
         document.getElementsByClassName('start-button')[0]
             .addEventListener(
                 'click',
-                () => { game.start() }
+                () => {
+                    game.start(
+                        ctx, canvasData, controls, game,
+                        createBullet, createEnemy, createRock, createPuddle
+                    )
+                }
             );
 
         document.getElementsByClassName('restart-button')[0]
@@ -342,6 +400,24 @@ export const game = {
             );
     },
 
+    /*Создаем свойство "players" для хранения объекта, содержащего объекты с данными персонажах.*/
+    players: {},
+    /*Создаем свойство "enemies" для хранения массива, содержащего объекты с данными о врагах.*/
+    enemies: [],
+    /*Создаем свойство "enemyIDs" для хранения массива, содержащего ID врагов.*/
+    enemyIDs: [],
+    /*Создаем свойство "bullets" для хранения массива, содержащего объекты с данными о пулях.*/
+    bullets: [],
+    /*Создаем свойство "bulletIDs" для хранения массива, содержащего ID пуль.*/
+    bulletIDs: [],
+    /*Создаем свойство "rocks" для хранения массива, содержащего объекты с данными о камнях.*/
+    rocks: [],
+    /*Создаем свойство "rockIDs" для хранения массива, содержащего ID камней.*/
+    rockIDs: [],
+    /*Создаем свойство "puddles" для хранения массива, содержащего объекты с данными о лужах.*/
+    puddles: [],
+    /*Создаем свойство "puddleIDs" для хранения массива, содержащего ID луж.*/
+    puddleIDs: [],
     /*Свойство "currentLevel" нужно для хранения текущего номера уровня в игре.*/
     currentLevel: 0,
     /**/
@@ -354,17 +430,19 @@ export const game = {
     finished: false,
 
     /**/
-    generateLevel: function () {
-        players.playerOne.increaseHealthPoints();
-        players.playerOne.x = 0;
-        players.playerOne.y = 400;
-        players.playerOne.slowed = false;
-        enemies.length = 0;
-        enemyIDs.length = 0;
-        rocks.length = 0;
-        rockIDs.length = 0;
-        puddles.length = 0;
-        puddleIDs.length = 0;
+    generateLevel: function (canvasData, createEnemy, createRock, createPuddle) {
+        this.players.playerOne.increaseHealthPoints();
+        this.players.playerOne.x = 0;
+        this.players.playerOne.y = 400;
+        this.players.playerOne.slowed = false;
+        this.enemies.length = 0;
+        this.enemyIDs.length = 0;
+        this.bullets.length = 0;
+        this.bulletIDs.length = 0;
+        this.rocks.length = 0;
+        this.rockIDs.length = 0;
+        this.puddles.length = 0;
+        this.puddleIDs.length = 0;
         this.currentLevel++;
 
         if (this.currentLevel % 3 === 0) { this.currrentEnemiesCount++ };
@@ -379,7 +457,7 @@ export const game = {
             x, y,
             width, height,
             speed,
-            numberOfVertices, clockwiseStepX, clockwiseStepY,
+            numberOfVertices, clockwiseStepX, clockwiseStepY, canvasData,
             bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
             bulletSpeedX, bulletSpeedY, shootDelay,
             bulletOwner, bulletIDs, bullets,
@@ -390,12 +468,12 @@ export const game = {
                 mathHelper.getRandomIntFromInterval(50, 1500), mathHelper.getRandomIntFromInterval(50, 580),
                 mathHelper.getRandomIntFromInterval(200, 600), mathHelper.getRandomIntFromInterval(200, 600),
                 40,
-                mathHelper.getRandomIntFromInterval(5, 8), 50, 100,
+                mathHelper.getRandomIntFromInterval(5, 8), 50, 100, canvasData,
                 8, '#000000', 1, '#ff00d4',
                 10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-                'enemy', bulletIDs, bullets,
-                players, enemies, rocks,
-                enemyIDs
+                'enemy', this.bulletIDs, this.bullets,
+                this.players, this.enemies, this.rocks,
+                this.enemyIDs
             );
         };
 
@@ -403,7 +481,7 @@ export const game = {
             /*
             x, y,
             width, height,
-            strokeStyle, lineWidth, fillStyle,
+            strokeStyle, lineWidth, fillStyle, canvasData,
             gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
             numberOfVertices, clockwiseStepX, clockwiseStepY,
             rocks, rockIDs
@@ -411,10 +489,10 @@ export const game = {
             createRock(
                 mathHelper.getRandomIntFromInterval(50, 1500), mathHelper.getRandomIntFromInterval(50, 580),
                 mathHelper.getRandomIntFromInterval(250, 300), mathHelper.getRandomIntFromInterval(250, 300),
-                'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)',
+                'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)', canvasData,
                 mathHelper.getRandomIntFromInterval(7, 12), 0.7, true, 0.9,
                 mathHelper.getRandomIntFromInterval(5, 8), mathHelper.getRandomIntFromInterval(100, 200), mathHelper.getRandomIntFromInterval(100, 200),
-                rocks, rockIDs
+                this.rocks, this.rockIDs
             );
         };;
 
@@ -422,7 +500,7 @@ export const game = {
             /*
             x, y,
             width, height,
-            strokeStyle, lineWidth, fillStyle,
+            strokeStyle, lineWidth, fillStyle, canvasData,
             gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
             numberOfVertices, clockwiseStepX, clockwiseStepY,
             puddles, puddleIDs
@@ -430,20 +508,25 @@ export const game = {
             createPuddle(
                 mathHelper.getRandomIntFromInterval(0, 1700), mathHelper.getRandomIntFromInterval(0, 750),
                 mathHelper.getRandomIntFromInterval(400, 500), mathHelper.getRandomIntFromInterval(400, 500),
-                'rgba(112, 17, 207, 0.466)', 1, 'rgba(128, 18, 238, 0.6)',
+                'rgba(112, 17, 207, 0.466)', 1, 'rgba(128, 18, 238, 0.6)', canvasData,
                 mathHelper.getRandomIntFromInterval(7, 12), 0.7, false, 0.8,
                 mathHelper.getRandomIntFromInterval(9, 12), 60, 60,
-                puddles, puddleIDs
+                this.puddles, this.puddleIDs
             );
         };
     },
 
     /**/
-    start: function () {
+    start: function (ctx, canvasData, controls, game, createBullet, createEnemy, createRock, createPuddle) {
         document.getElementsByClassName('start-button')[0].disabled = true;
         document.getElementsByClassName('restart-button')[0].disabled = false;
 
-        requestAnimationFrame((timestamp) => { game.gameLoop(timestamp) });
+        requestAnimationFrame(
+            (timestamp) => game.gameLoop(
+                timestamp, ctx, canvasData, controls, game,
+                createBullet, createEnemy, createRock, createPuddle
+            )
+        );
     },
 
     /**/
@@ -453,39 +536,20 @@ export const game = {
         this.currrentEnemiesCount = 4;
         this.currentRocksCount = 4;
         this.currentPuddlesCount = 4;
-        players.playerOne.x = 0;
-        players.playerOne.y = 400;
-        players.playerOne.slowed = false;
-        players.playerOne.healthPoints = players.playerOne.maxHealthPoints;
-        enemies.length = 0;
-        enemyIDs.length = 0;
-        rocks.length = 0;
-        rockIDs.length = 0;
-        puddles.length = 0;
-        puddleIDs.length = 0;
+        this.players.playerOne.x = 0;
+        this.players.playerOne.y = 400;
+        this.players.playerOne.slowed = false;
+        this.players.playerOne.healthPoints = this.players.playerOne.maxHealthPoints;
+        this.enemies.length = 0;
+        this.enemyIDs.length = 0;
+        this.bullets.length = 0;
+        this.bulletIDs.length = 0;
+        this.rocks.length = 0;
+        this.rockIDs.length = 0;
+        this.puddles.length = 0;
+        this.puddleIDs.length = 0;
     },
 };
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-
-/*Создаем массив "bulletIDs" для хранения ID пуль.*/
-const bulletIDs = [];
-/*Создаем массив "bullets" для хранения объектов, содержащих данные о пулях.*/
-const bullets = [];
-/*Создаем массив "puddleIDs" для хранения ID луж.*/
-const puddleIDs = [];
-/*Создаем массив "puddles" для хранения объектов, содержащих данные о лужах.*/
-const puddles = [];
-/*Создаем массив "rockIDs" для хранения ID камней.*/
-const rockIDs = [];
-/*Создаем массив "rocks" для хранения объектов, содержащих данные о камнях.*/
-const rocks = [];
-/*Создаем массив "enemyIDs" для хранения ID врагов.*/
-const enemyIDs = [];
-/*Создаем массив "enemies" для хранения объектов, содержащих данные о врагах.*/
-const enemies = [];
-/*Создаем объект "players" для хранения объектов, содержащих данные о персонажах.*/
-const players = {};
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
@@ -500,7 +564,7 @@ bulletOwner,
 players, enemies, rocks, puddles, bullets, 
 bulletIDs, enemyIDs
 */
-players.playerOne = new Player(
+game.players.playerOne = new Player(
     0, 400,
     50, 50,
     11, 0.4,
@@ -508,6 +572,6 @@ players.playerOne = new Player(
     5, '#000000', 1, '#00ffea',
     15, 15, 20,
     'player',
-    players, enemies, rocks, puddles, bullets,
-    bulletIDs, enemyIDs
+    game.players, game.enemies, game.rocks, game.puddles, game.bullets,
+    game.bulletIDs, game.enemyIDs
 );

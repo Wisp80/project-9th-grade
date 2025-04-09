@@ -1,9 +1,5 @@
 'use strict';
-import { canvasData, ctx } from '../../canvas/canvas.js';
-import { controls } from '../controls.js';
 import { mathHelper } from '../../helpers/mathHelper.js';
-import { game } from '../game.js';
-import { createBullet } from './bullet.js';
 
 /*Класс "Player" создает объекты, содержащие данные о персонаже.
 
@@ -113,9 +109,12 @@ export class Player {
     };
 
     /*Метод "processMovingControls()" обрабатывает нажатые игроком кнопки передвижения.
-    Метод "processMovingControls()" не принимает никаких параметров.
+    
+    Метод "processMovingControls()" принимает следующие параметры:
+    1. "controls" - это параметр в виде объекта, обрабатывающего нажатие и отжатие кнопок управления в игре.
+
     Метод "processMovingControls()" ничего не возвращает.*/
-    processMovingControls() {
+    processMovingControls(controls) {
         /*Создаем переменную "currentSpeed" для хранения текущей скорости передвижения персонажа. Если персонаж 
         замедлен, то эта скорость равна скорости передвижения персонажа перемноженной на множитель замедления 
         передвижения персонажа, иначе эта скорость равна полной скорости передвижения персонажа.*/
@@ -207,9 +206,15 @@ export class Player {
     };
 
     /*Метод "processShootingControls()" обрабатывает нажатые игроком кнопки стрельбы.
-    Метод "processShootingControls()" не принимает никаких параметров.
+    
+    Метод "processShootingControls()" принимает следующие параметры:
+    1. "controls" - это параметр в виде объекта, обрабатывающего нажатие и отжатие кнопок управления в игре.
+    2. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+    3. "createBullet" - это параметр в виде функции, которая создает объект, содержащий данные о пуле, на основе класса 
+    "Bullet" и помещает этот объект в массив, куда должны сохраняться такие объекты.
+
     Метод "processShootingControls()" ничего не возвращает.*/
-    processShootingControls() {
+    processShootingControls(controls, game, createBullet) {
         /*Если с момента последнего выстрела персонажа прошло достаточно рассчитанных кадров, то устанавливаем флаг, 
         указывающий, что персонаж недавно не стрелял, то есть персонаж снова может стрелять.*/
         if (game.totalCalculatedFrames - this.lastShotCalculatedFrame > this.shootDelay) { this.shotRecently = false };
@@ -319,17 +324,26 @@ export class Player {
     };
 
     /*Метод "processControls()" совмещает вызовы методов "processMovingControls()" и "processShootingControls()".
-    Метод "processControls()" не принимает никаких параметров.
+    
+    Метод "processControls()" принимает следующие параметры:
+    1. "controls" - это параметр в виде объекта, обрабатывающего нажатие и отжатие кнопок управления в игре.
+    2. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+    3. "createBullet" - это параметр в виде функции, которая создает объект, содержащий данные о пуле, на основе класса 
+    "Bullet" и помещает этот объект в массив, куда должны сохраняться такие объекты.
+    
     Метод "processControls()" ничего не возвращает.*/
-    processControls() {
-        this.processMovingControls();
-        this.processShootingControls();
+    processControls(controls, game, createBullet) {
+        this.processMovingControls(controls);
+        this.processShootingControls(controls, game, createBullet);
     };
 
     /*Метод "moveX()" обрабатывает движение персонажа по оси X.
-    Метод "moveX()" не принимает никаких параметров.
+    
+    Метод "moveX()" принимает следующие параметры:
+    1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+
     Метод "moveX()" ничего не возвращает.*/
-    moveX() {
+    moveX(canvasData) {
         /*Сохраняем предыдущую X-координуту персонажа. Это нужно для отрисовки персонажа с учетом интерполяции.*/
         this.previousX = this.x;
         /*Создаем переменную "nextX" для хранения X-координаты персонажа в следующем кадре, которую "предсказываем" в 
@@ -423,7 +437,9 @@ export class Player {
                 горизонтальном движении, с какими-то камнями. Если есть пересечения, то "выталкиваем" эту позицию из 
                 пересекаемых камней.*/
                 for (let i = 0; i < this.rocks.length; i++) {
-                    while (mathHelper.doTwoPolygonsIntersect(predictedHorizontalPositionVertices, this.rocks[i].vertices)) {
+                    while (mathHelper.doTwoPolygonsIntersect(
+                        predictedHorizontalPositionVertices, this.rocks[i].vertices
+                    )) {
                         for (let j = 0; j < predictedHorizontalPositionVertices.length; j++) {
                             predictedHorizontalPositionVertices[j].x -= Math.sign(this.currentSpeedX);
                         };
@@ -448,9 +464,12 @@ export class Player {
     };
 
     /*Метод "moveY()" обрабатывает движение персонажа по оси Y.
-    Метод "moveY()" не принимает никаких параметров.
+    
+    Метод "moveY()" принимает следующие параметры:
+    1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+
     Метод "moveY()" ничего не возвращает.*/
-    moveY() {
+    moveY(canvasData) {
         /*Метод "moveY()" работает аналогично, как и метод "moveX()".*/
         this.previousY = this.y;
         let nextY = this.y + this.currentSpeedY;
@@ -507,7 +526,9 @@ export class Player {
                 ];
 
                 for (let i = 0; i < this.rocks.length; i++) {
-                    while (mathHelper.doTwoPolygonsIntersect(predictedVerticalPositionVertices, this.rocks[i].vertices)) {
+                    while (mathHelper.doTwoPolygonsIntersect(
+                        predictedVerticalPositionVertices, this.rocks[i].vertices
+                    )) {
                         for (let j = 0; j < predictedVerticalPositionVertices.length; j++) {
                             predictedVerticalPositionVertices[j].y -= Math.sign(this.currentSpeedY);
                         };
@@ -553,9 +574,12 @@ export class Player {
     };
 
     /*Метод "takeDamageIfTouchedByEnemy()" понижает здоровье персонажа на 1, если персонаж касается врага.
-    Метод "takeDamageIfTouchedByEnemy()" не принимает никаких параметров.
+    
+    Метод "takeDamageIfTouchedByEnemy()" принимает следующие параметры:
+    1. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+
     Метод "takeDamageIfTouchedByEnemy()" ничего не возвращает.*/
-    takeDamageIfTouchedByEnemy() {
+    takeDamageIfTouchedByEnemy(game) {
         /*Если с момента последнего получения урона персонажем прошло достаточно рассчитанных кадров, то устанавливаем 
         флаг, указывающий, что персонаж недавно не получал урон, то есть персонаж снова может получить урон.*/
         if (game.totalCalculatedFrames - this.lastTakingDamageCalculatedFrame > this.takeDamageDelay) {
@@ -581,13 +605,17 @@ export class Player {
     };
 
     /*Метод "move()" совмещает вызовы методов "moveX()", "moveY()" и "takeDamageIfTouchedByEnemy()", дополнительно 
-    проверяя не находится ли персонаж в луже.
-    Метод "move()" не принимает никаких параметров.
+    проверяя не находится ли персонаж в луже.    
+    
+    Метод "move()" принимает следующие параметры:
+    1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+    2. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+
     Метод "move()" ничего не возвращает.*/
-    move() {
-        this.moveX();
-        this.moveY();
-        this.takeDamageIfTouchedByEnemy();
+    move(canvasData, game) {
+        this.moveX(canvasData);
+        this.moveY(canvasData);
+        this.takeDamageIfTouchedByEnemy(game);
         const playerVertices = this.findCurrentPlayerVertices();
 
         for (let i = 0; i < this.puddles.length; i++) {
@@ -603,11 +631,13 @@ export class Player {
     /*Метод "draw()" отрисовывает персонажа.
 
     Метод "draw()" принимает следующие параметры:
-    1. "interpolationFactor" - это числовой параметр, указывающий коэффициет интерполяции для создания промежуточных 
+    1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+    2. "interpolationFactor" - это числовой параметр, указывающий коэффициет интерполяции для создания промежуточных 
     кадров с целью осуществления плавной отрисовки при движении.
-
+    3. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+    
     Метод "draw()" ничего не возвращает.*/
-    draw(interpolationFactor) {
+    draw(ctx, interpolationFactor, game) {
         /*Остаток от деления числа на 360 всегда будет в диапозоне от 0 до 359. При помощи этого на основе количества 
         рассчитанных кадров за всю игру рассчитываем градусы. Мы переводим полученные градусы в радианы, так как дальше 
         мы используем методы "Math.cos()" и "Math.sin()", использующие радианы в качестве параметров. Чтобы получить 
