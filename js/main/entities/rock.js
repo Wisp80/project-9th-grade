@@ -83,20 +83,20 @@ class Rock {
         них за пределы холста. Если это так, то корректируем все вершины многоугольника, который обозначает форму 
         камня.*/
         for (let i = 0; i < this.vertices.length; i++) {
-            if (this.vertices[i].x <= 55) {
-                for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x += canvasData.cellWidth * 2 };;
+            while (this.vertices[i].x <= 55) {
+                for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x += canvasData.cellWidth };
             };
 
-            if (this.vertices[i].x >= canvasData.canvasWidth - 55) {
-                for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x -= canvasData.cellWidth * 2 };
+            while (this.vertices[i].x >= canvasData.canvasWidth - 55) {
+                for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x -= canvasData.cellWidth };
             };
 
-            if (this.vertices[i].y <= 55) {
-                for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y += canvasData.cellHeight * 2 };;
+            while (this.vertices[i].y <= 55) {
+                for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y += canvasData.cellHeight };
             };
 
-            if (this.vertices[i].y >= canvasData.canvasHeight - 55) {
-                for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y -= canvasData.cellHeight * 2 };
+            while (this.vertices[i].y >= canvasData.canvasHeight - 55) {
+                for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y -= canvasData.cellHeight };
             };
         };
 

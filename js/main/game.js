@@ -35,10 +35,6 @@ export const game = {
     /*Свойство "renderedFramesFPS" нужно для хранения текущего значения FPS для отрисованных кадров.*/
     renderedFramesFPS: 0,
 
-    /*Свойство "currentLevel" нужно для хранения текущего номера уровня в игре.*/
-    currentLevel: 1,
-    finished: false,
-
     /*Свойство "fixedTimeStep" нужно для хранения фиксированного временного шага для расчета данных для кадров игры в 60 
     FPS. Этим свойством мы указываем, чтобы данные для кадров рассчитывались не чаще, чем 60 раз в секунду, то есть на 
     рассчет данных для одного кадра должно уходить не меньше ≈16.67 милисекунд. При этом отрисовка рассчитанных данных 
@@ -71,6 +67,9 @@ export const game = {
         /*Подчишаем работы предыдущего вызова функции "requestAnimationFrame()" при помощи функции 
         "cancelAnimationFrame()".*/
         cancelAnimationFrame(this.rafID);
+
+        /*Проверяем не умер ли персонаж. Если это так, то сообщаем, что игра окончена.*/
+        if (players.playerOne.healthPoints <= 0) { this.finished = true };
 
         /*Функция "requestAnimationFrame()" принимает в качестве параметра callback-функцию. Функция 
         "requestAnimationFrame()" сама решает когда нужно вызывать переданную в нее callback-функцию.
@@ -177,16 +176,21 @@ export const game = {
     Метод "prepareDataForNextFrame()" не принимает никаких параметров.
     Метод "prepareDataForNextFrame()" ничего не возвращает.*/
     prepareDataForNextFrame: function () {
-        /*Обрабатываем нажатые кнопки игроком при помощи метода "players.playerOne.processControls()".*/
-        players.playerOne.processControls();
-        /*Обрабатываем движение персонажа на основе нажатых кнопок игроком.*/
-        players.playerOne.move();
-        /*Обрабатываем движение врагов при помощи метода "enemy.move()".*/
-        for (const enemy of enemies) { enemy.move() };
-        /*Обрабатываем стрельбу врагов при помощи метода "enemy.shoot()".*/
-        for (const enemy of enemies) { enemy.shoot() };
-        /*Обрабатываем движение пуль при помощи метода "bullet.move()".*/
-        for (const bullet of bullets) { bullet.move() };
+        if (!this.finished) {
+            /**/
+            if (enemies.length === 0) { this.generateLevel() };
+
+            /*Обрабатываем нажатые кнопки игроком при помощи метода "players.playerOne.processControls()".*/
+            players.playerOne.processControls();
+            /*Обрабатываем движение персонажа на основе нажатых кнопок игроком.*/
+            players.playerOne.move();
+            /*Обрабатываем движение врагов при помощи метода "enemy.move()".*/
+            for (const enemy of enemies) { enemy.move() };
+            /*Обрабатываем стрельбу врагов при помощи метода "enemy.shoot()".*/
+            for (const enemy of enemies) { enemy.shoot() };
+            /*Обрабатываем движение пуль при помощи метода "bullet.move()".*/
+            for (const bullet of bullets) { bullet.move() };
+        };
     },
 
     /*Метод "renderPreparedDataForNextFrame()" отрисовывает подготавленные данные для следующего кадра.
@@ -197,16 +201,24 @@ export const game = {
         graphicsHelper.clearScreen('rgba(125, 109, 76, 1)');
         /*Отрисовываем сетку на экране.*/
         graphicsHelper.drawGrid();
-        /*Отрисовываем лужи при помощи метода "puddle.draw()".*/
-        for (const puddle of puddles) { puddle.draw() };
-        /*Отрисовываем камни при помощи метода "rock.draw()".*/
-        for (const rock of rocks) { rock.draw() };
-        /*Отрисовываем пули при помощи метода "bullet.draw()".*/
-        for (const bullet of bullets) { bullet.draw(interpolationFactor) };
-        /*Отрисовываем персонажа при помощи метода "players.playerOne.draw()".*/
-        players.playerOne.draw(interpolationFactor);
-        /*Отрисовываем врагов при помощи метода "enemy.draw()".*/
-        for (const enemy of enemies) { enemy.draw(interpolationFactor) };
+
+        /**/
+        if (!this.finished) {
+            /*Отрисовываем лужи при помощи метода "puddle.draw()".*/
+            for (const puddle of puddles) { puddle.draw() };
+            /*Отрисовываем камни при помощи метода "rock.draw()".*/
+            for (const rock of rocks) { rock.draw() };
+            /*Отрисовываем пули при помощи метода "bullet.draw()".*/
+            for (const bullet of bullets) { bullet.draw(interpolationFactor) };
+            /*Отрисовываем персонажа при помощи метода "players.playerOne.draw()".*/
+            players.playerOne.draw(interpolationFactor);
+            /*Отрисовываем врагов при помощи метода "enemy.draw()".*/
+            for (const enemy of enemies) { enemy.draw(interpolationFactor) };
+        } else {
+            /**/
+            this.drawGameOverScreen();
+        };
+
         /*Отрисовываем текущее значение FPS при помощи метода "drawFPS()".*/
         this.drawFPS();
         /*Отрисовываем текущий уровень в игре при помощи метода "drawCurrentLevel()".*/
@@ -293,6 +305,17 @@ export const game = {
     },
 
     /**/
+    drawGameOverScreen: function () {
+        ctx.fillStyle = '#ff4800';
+        ctx.font = '30px serif';
+        ctx.fillText(
+            `YOU REACHED LEVEL: ${this.currentLevel}`,
+            canvasData.canvasWidth / 2 - 180,
+            canvasData.canvasHeight / 2
+        );
+    },
+
+    /**/
     initializeMenuButtonsListening: function () {
         document.getElementsByClassName('interpolation-on-button')[0]
             .addEventListener(
@@ -319,6 +342,102 @@ export const game = {
             );
     },
 
+    /*Свойство "currentLevel" нужно для хранения текущего номера уровня в игре.*/
+    currentLevel: 0,
+    /**/
+    currrentEnemiesCount: 4,
+    /**/
+    currentRocksCount: 4,
+    /**/
+    currentPuddlesCount: 4,
+    /**/
+    finished: false,
+
+    /**/
+    generateLevel: function () {
+        players.playerOne.increaseHealthPoints();
+        players.playerOne.x = 0;
+        players.playerOne.y = 400;
+        players.playerOne.slowed = false;
+        enemies.length = 0;
+        enemyIDs.length = 0;
+        rocks.length = 0;
+        rockIDs.length = 0;
+        puddles.length = 0;
+        puddleIDs.length = 0;
+        this.currentLevel++;
+
+        if (this.currentLevel % 3 === 0) { this.currrentEnemiesCount++ };
+
+        if (this.currentLevel % 5 === 0) {
+            if (this.currentRocksCount > 0) { this.currentRocksCount--; };
+            this.currentPuddlesCount++;
+        };
+
+        for (let i = 0; i < this.currrentEnemiesCount; i++) {
+            /*
+            x, y,
+            width, height,
+            speed,
+            numberOfVertices, clockwiseStepX, clockwiseStepY,
+            bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
+            bulletSpeedX, bulletSpeedY, shootDelay,
+            bulletOwner, bulletIDs, bullets,
+            players, enemies, rocks,
+            enemyIDs
+            */
+            createEnemy(
+                mathHelper.getRandomIntFromInterval(50, 1500), mathHelper.getRandomIntFromInterval(50, 580),
+                mathHelper.getRandomIntFromInterval(200, 600), mathHelper.getRandomIntFromInterval(200, 600),
+                40,
+                mathHelper.getRandomIntFromInterval(5, 8), 50, 100,
+                8, '#000000', 1, '#ff00d4',
+                10, 10, mathHelper.getRandomIntFromInterval(20, 100),
+                'enemy', bulletIDs, bullets,
+                players, enemies, rocks,
+                enemyIDs
+            );
+        };
+
+        for (let i = 0; i < this.currentRocksCount; i++) {
+            /*
+            x, y,
+            width, height,
+            strokeStyle, lineWidth, fillStyle,
+            gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
+            numberOfVertices, clockwiseStepX, clockwiseStepY,
+            rocks, rockIDs
+            */
+            createRock(
+                mathHelper.getRandomIntFromInterval(50, 1500), mathHelper.getRandomIntFromInterval(50, 580),
+                mathHelper.getRandomIntFromInterval(250, 300), mathHelper.getRandomIntFromInterval(250, 300),
+                'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)',
+                mathHelper.getRandomIntFromInterval(7, 12), 0.7, true, 0.9,
+                mathHelper.getRandomIntFromInterval(5, 8), mathHelper.getRandomIntFromInterval(100, 200), mathHelper.getRandomIntFromInterval(100, 200),
+                rocks, rockIDs
+            );
+        };;
+
+        for (let i = 0; i < this.currentPuddlesCount; i++) {
+            /*
+            x, y,
+            width, height,
+            strokeStyle, lineWidth, fillStyle,
+            gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
+            numberOfVertices, clockwiseStepX, clockwiseStepY,
+            puddles, puddleIDs
+            */
+            createPuddle(
+                mathHelper.getRandomIntFromInterval(0, 1700), mathHelper.getRandomIntFromInterval(0, 750),
+                mathHelper.getRandomIntFromInterval(400, 500), mathHelper.getRandomIntFromInterval(400, 500),
+                'rgba(112, 17, 207, 0.466)', 1, 'rgba(128, 18, 238, 0.6)',
+                mathHelper.getRandomIntFromInterval(7, 12), 0.7, false, 0.8,
+                mathHelper.getRandomIntFromInterval(9, 12), 60, 60,
+                puddles, puddleIDs
+            );
+        };
+    },
+
     /**/
     start: function () {
         document.getElementsByClassName('start-button')[0].disabled = true;
@@ -329,7 +448,21 @@ export const game = {
 
     /**/
     restart: function () {
-
+        this.finished = false;
+        this.currentLevel = 0;
+        this.currrentEnemiesCount = 4;
+        this.currentRocksCount = 4;
+        this.currentPuddlesCount = 4;
+        players.playerOne.x = 0;
+        players.playerOne.y = 400;
+        players.playerOne.slowed = false;
+        players.playerOne.healthPoints = players.playerOne.maxHealthPoints;
+        enemies.length = 0;
+        enemyIDs.length = 0;
+        rocks.length = 0;
+        rockIDs.length = 0;
+        puddles.length = 0;
+        puddleIDs.length = 0;
     },
 };
 
@@ -360,7 +493,7 @@ const players = {};
 x, y,
 width, height,
 speed, slowDebuffMultiplier,
-healthPoints, takeDamageDelay,
+maxHealthPoints, takeDamageDelay,
 bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
 bulletSpeedX, bulletSpeedY, shootDelay,
 bulletOwner,
@@ -368,250 +501,13 @@ players, enemies, rocks, puddles, bullets,
 bulletIDs, enemyIDs
 */
 players.playerOne = new Player(
-    100, 400,
+    0, 400,
     50, 50,
-    15, 0.2,
-    3, 1000,
+    11, 0.4,
+    3, 50,
     5, '#000000', 1, '#00ffea',
     15, 15, 20,
     'player',
     players, enemies, rocks, puddles, bullets,
     bulletIDs, enemyIDs
 );
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-
-/*
-x, y,
-width, height,
-speed,
-numberOfVertices, clockwiseStepX, clockwiseStepY,
-bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
-bulletSpeedX, bulletSpeedY, shootDelay,
-bulletOwner, bulletIDs, bullets,
-players, enemies, rocks,
-enemyIDs
-*/
-createEnemy(
-    200, 650,
-    150, 200,
-    40,
-    6, 50, 100,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    300, 200,
-    200, 150,
-    40,
-    6, 100, 50,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    600, 300,
-    150, 200,
-    40,
-    6, 50, 100,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    900, 600,
-    200, 150,
-    40,
-    6, 100, 50,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    1100, 400,
-    150, 200,
-    40,
-    6, 50, 100,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    1200, 100,
-    200, 150,
-    40,
-    6, 100, 50,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-
-
-createEnemy(
-    200, 650,
-    150, 200,
-    40,
-    6, 50, 100,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    300, 200,
-    200, 150,
-    40,
-    6, 100, 50,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    600, 300,
-    150, 200,
-    40,
-    6, 50, 100,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    900, 600,
-    200, 150,
-    40,
-    6, 100, 50,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    1100, 400,
-    150, 200,
-    40,
-    6, 50, 100,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-createEnemy(
-    1200, 100,
-    200, 150,
-    40,
-    6, 100, 50,
-    8, '#000000', 1, '#ff00d4',
-    10, 10, mathHelper.getRandomIntFromInterval(20, 100),
-    'enemy', bulletIDs, bullets,
-    players, enemies, rocks,
-    enemyIDs
-);
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-
-/*
-x, y,
-width, height,
-strokeStyle, lineWidth, fillStyle,
-gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
-numberOfVertices, clockwiseStepX, clockwiseStepY,
-rocks, rockIDs
-*/
-createRock(
-    300, 350,
-    150, 200,
-    'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)',
-    7, 0.7, true, 0.9,
-    6, 50, 100,
-    rocks, rockIDs
-);
-
-createRock(
-    650, 350,
-    150, 200,
-    'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)',
-    7, 0.7, true, 0.8,
-    6, 50, 100,
-    rocks, rockIDs
-);
-
-createRock(
-    1150, 450,
-    600, 600,
-    'rgba(66, 66, 66, 1)', 1, 'rgba(119, 119, 119, 0.842)',
-    9, 0.7, true, 0.95,
-    8, 100, 100,
-    rocks, rockIDs
-);
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-
-/*
-x, y,
-width, height,
-strokeStyle, lineWidth, fillStyle,
-gradientSteps, darkeningStep, isGradientReversed, lastLayerFactor,
-numberOfVertices, clockwiseStepX, clockwiseStepY,
-puddles, puddleIDs
-*/
-createPuddle(
-    500, 550,
-    150, 200,
-    'rgba(112, 17, 207, 0.466)', 1, 'rgba(128, 18, 238, 0.6)',
-    7, 0.7, false, 0.8,
-    6, 50, 100,
-    puddles, puddleIDs
-);
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-
-/*Проверяем находится ли какая-то точка внутри многоугольника при помощи метода "helper.isPointInsidePolygon()".
-Это нужно только для тестирования.*/
-// const vertices = mathHelper.preparePolygonVerticesData(
-//     13,
-//     100, 1400,
-//     50, 850,
-//     150, 100,
-//     canvasData.cellWidth, canvasData.cellHeight
-// );
-
-// const vertices2 = mathHelper.preparePolygonVerticesData(
-//     7,
-//     100, 1400,
-//     50, 850,
-//     50, 25,
-//     canvasData.cellWidth, canvasData.cellHeight
-// );
-// graphicsHelper.drawPolygonFromVertices(vertices, 10, 'yellow', 'rgb(20, 2, 50, 0.6)');
-// mathHelper.isPointInsidePolygon({ x: 500, y: 420 }, vertices);

@@ -165,16 +165,9 @@ class Bullet {
             )
         ) {
             if (!this.players.playerOne.tookDamageRecently) {
+                this.players.playerOne.lastTakingDamageCalculatedFrame = game.totalCalculatedFrames;
                 this.players.playerOne.decreaseHealthPoints();
                 this.players.playerOne.tookDamageRecently = true;
-
-                const setTimeoutID = setTimeout(
-                    () => {
-                        this.players.playerOne.tookDamageRecently = false;
-                        clearTimeout(setTimeoutID)
-                    },
-                    this.players.playerOne.takeDamageDelay
-                );
             };
 
             this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);

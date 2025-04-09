@@ -37,11 +37,11 @@ export class Player {
         x, y,
         width, height,
         speed, slowDebuffMultiplier,
-        healthPoints, takeDamageDelay,
+        maxHealthPoints, takeDamageDelay,
         bulletRadius, bulletStrokeStyle, bulletLineWidth, bulletFillStyle,
         bulletSpeedX, bulletSpeedY, shootDelay,
         bulletOwner,
-        players, enemies, rocks, puddles, bullets, 
+        players, enemies, rocks, puddles, bullets,
         bulletIDs, enemyIDs
     ) {
         /*X-координата персонажа.*/
@@ -66,12 +66,16 @@ export class Player {
         this.currentSpeedX = 0;
         /*Текущая скорость по оси Y персонажа.*/
         this.currentSpeedY = 0;
+        /*Максимальное количество очков здоровья персонажа.*/
+        this.maxHealthPoints = maxHealthPoints;
         /*Очки здоровья персонажа.*/
-        this.healthPoints = healthPoints;
-        /*Время неуязвимости после получения урона персонажем.*/
+        this.healthPoints = maxHealthPoints;
+        /*Время неуязвимости после получения урона персонажем в рассчитанных кадрах.*/
         this.takeDamageDelay = takeDamageDelay;
         /*Флаг, показывающий не получил ли недавно урон персонаж.*/
         this.tookDamageRecently = false;
+        /*Номер рассчитанного кадра, когда был последний раз получен урон персонажем.*/
+        this.lastTakingDamageCalculatedFrame = 0;
         /*Радиус пуль, которыми стреляет персонаж.*/
         this.bulletRadius = bulletRadius;
         /*Цвет обводки пуль, которыми стреляет персонаж.*/
@@ -88,8 +92,8 @@ export class Player {
         this.shootDelay = shootDelay;
         /*Флаг, показывающий не стрелял ли недавно персонаж.*/
         this.shotRecently = false;
-        /*Номер кадра, когда был сделан последний выстрел.*/
-        this.lastShotFrame = 0;
+        /*Номер рассчитанного кадра, когда был сделан последний выстрел.*/
+        this.lastShotCalculatedFrame = 0;
         /*Свойство, описывающее, кто владелец пуль, стреляемых персонажем.*/
         this.bulletOwner = bulletOwner;
         /*Объект, содержащий объекты, содержащие данные о персонажах.*/
@@ -208,7 +212,7 @@ export class Player {
     processShootingControls() {
         /*Если с момента последнего выстрела персонажа прошло достаточно рассчитанных кадров, то устанавливаем флаг, 
         указывающий, что персонаж недавно не стрелял, то есть персонаж снова может стрелять.*/
-        if (game.totalCalculatedFrames - this.lastShotFrame > this.shootDelay) { this.shotRecently = false };
+        if (game.totalCalculatedFrames - this.lastShotCalculatedFrame > this.shootDelay) { this.shotRecently = false };
 
         /*Если нажата одна из неразрешенных комбинаций кнопок стрельбы, то не персонаж не стреляет.*/
         if (controls.isUpArrowKeyDown && controls.isDownArrowKeyDown ||
@@ -251,7 +255,7 @@ export class Player {
             стрелять.*/
             this.shotRecently = true;
             /*Сохраняем номер рассчитанного кадра, когда был сделан последний выстрел.*/
-            this.lastShotFrame = game.totalCalculatedFrames;
+            this.lastShotCalculatedFrame = game.totalCalculatedFrames;
             return;
         };
 
@@ -537,36 +541,40 @@ export class Player {
     /*Метод "decreaseHealthPoints()" понижает здоровье персонажа на 1.
     Метод "decreaseHealthPoints()" не принимает никаких параметров.
     Метод "decreaseHealthPoints()" ничего не возвращает.*/
-    decreaseHealthPoints() { if (this.healthPoints > 0) { this.healthPoints-- } };
+    decreaseHealthPoints() {
+        if (this.healthPoints > 0) { this.healthPoints-- }
+    };
 
     /*Метод "increaseHealthPoints()" повышает здоровье персонажа на 1.
     Метод "increaseHealthPoints()" не принимает никаких параметров.
     Метод "increaseHealthPoints()" ничего не возвращает.*/
-    increaseHealthPoints() { if (this.healthPoints > 0) { this.healthPoints++ } };
+    increaseHealthPoints() {
+        if (this.healthPoints > 0 && this.healthPoints < this.maxHealthPoints) { this.healthPoints++ }
+    };
 
     /*Метод "takeDamageIfTouchedByEnemy()" понижает здоровье персонажа на 1, если персонаж касается врага.
     Метод "takeDamageIfTouchedByEnemy()" не принимает никаких параметров.
     Метод "takeDamageIfTouchedByEnemy()" ничего не возвращает.*/
     takeDamageIfTouchedByEnemy() {
-        /*Находим массив объектов, содержащих координаты вершин текущей прямоугольной позиции персонажа, при помощи 
-        метода "findCurrentPlayerVertices()".*/
-        const playerVertices = this.findCurrentPlayerVertices();
+        /*Если с момента последнего получения урона персонажем прошло достаточно рассчитанных кадров, то устанавливаем 
+        флаг, указывающий, что персонаж недавно не получал урон, то есть персонаж снова может получить урон.*/
+        if (game.totalCalculatedFrames - this.lastTakingDamageCalculatedFrame > this.takeDamageDelay) {
+            this.tookDamageRecently = false;
+        };
 
-        /*Перебираем все врагов и проверяем не касается ли персонаж кого-то из них. Если это так, то персонаж теряет 
-        одно очко здоровья при помощи метода "decreaseHealthPoints()".*/
-        for (let i = 0; i < this.enemies.length; i++) {
-            if (mathHelper.doTwoPolygonsIntersect(playerVertices, this.enemies[i].vertices)) {
-                if (!this.tookDamageRecently) {
+        /*Если персонаж недавно не получал урон, то проверяем не касается ли он какого-то врага.*/
+        if (!this.tookDamageRecently) {
+            /*Находим массив объектов, содержащих координаты вершин текущей прямоугольной позиции персонажа, при помощи 
+            метода "findCurrentPlayerVertices()".*/
+            const playerVertices = this.findCurrentPlayerVertices();
+
+            /*Перебираем все врагов и проверяем не касается ли персонаж кого-то из них. Если это так, то персонаж теряет 
+            одно очко здоровья при помощи метода "decreaseHealthPoints()".*/
+            for (let i = 0; i < this.enemies.length; i++) {
+                if (mathHelper.doTwoPolygonsIntersect(playerVertices, this.enemies[i].vertices)) {
+                    this.lastTakingDamageCalculatedFrame = game.totalCalculatedFrames;
                     this.tookDamageRecently = true;
                     this.decreaseHealthPoints();
-
-                    const setTimeoutID = setTimeout(
-                        () => {
-                            this.tookDamageRecently = false;
-                            clearTimeout(setTimeoutID)
-                        },
-                        this.takeDamageDelay
-                    );
                 };
             };
         };

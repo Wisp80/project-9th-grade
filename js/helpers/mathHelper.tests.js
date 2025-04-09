@@ -134,6 +134,36 @@ import { mathHelper } from '../helpers/mathHelper.js';
 //     ]
 // )); // true
 
+
+
+
+
+// console.log(mathHelper.doTwoPolygonsIntersect(
+//     [
+//         { x: 1, y: 400 }, { x: 51, y: 400 }, { x: 51, y: 450 }, { x: 1, y: 450 }
+//     ],
+
+//     [
+//         { x: 725, y: 300 }, { x: 790, y: 325 }, { x: 790, y: 375 }, { x: 750, y: 425 },
+//         { x: 725, y: 450 }, { x: 675, y: 465 }, { x: 625, y: 400 }, { x: 575, y: 325 },
+//         { x: 536, y: 275 }, { x: 575, y: 211 }, { x: 650, y: 211 }, { x: 650, y: 211 },
+//         { x: 700, y: 211 }
+//     ]
+// )); // false
+
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 1, y: 400 }, { x: 51, y: 400 },
+//     { x: 650, y: 211 }, { x: 650, y: 211 })
+// ); // false
+
+// console.log(mathHelper.getPointPositionRelativeToLineSegment(650, 211, 650, 211, 1, 400));
+
+
+// console.log(mathHelper.doTwoLineSegmentsIntersect(
+//     { x: 1, y: 400 }, { x: 51, y: 400 },
+//     { x: 1000, y: 1000 }, { x: 1000, y: 1000 })
+// ); // false
+
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 // const point01 = { x: 1350, y: 850 };
