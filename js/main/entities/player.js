@@ -371,10 +371,9 @@ export class Player {
                 и идут дальше по часовой стрелке.*/
                 let predictedHorizontalPathVertices = null;
 
-                /*Если наша текущая скорость персонажа по оси X больше 0, то это означает, что персонаж движется в
-                правую сторону и путь будет совершен тоже в правую сторону. Если же наша текущая скорость персонажа по 
-                оси X меньше 0, то это означает, что персонаж движется в левую сторону и путь будет совершен тоже в 
-                левую сторону.*/
+                /*Если текущая скорость персонажа по оси X больше 0, то это означает, что персонаж движется в правую 
+                сторону и путь будет совершен тоже в правую сторону. Если же текущая скорость персонажа по оси X меньше 
+                0, то это означает, что персонаж движется в левую сторону и путь будет совершен тоже в левую сторону.*/
                 if (this.currentSpeedX > 0) {
                     horizontalMovementDirection = 'right';
 
@@ -720,7 +719,7 @@ export class Player {
             /*Отрисовываем предсказанный путь, который пройдет персонаж в следующем кадре с учетом интерполяции. Это 
             нужно только для тестирования.*/
             // ctx.lineWidth = 1;
-            // ctx.strokeStyle = '#00c3ff';
+            // ctx.strokeStyle = 'rgba(14, 215, 230, 1)';
             // ctx.strokeRect(x + this.width, y, this.speed, this.height);
             // ctx.strokeRect(x - this.speed, y, this.speed, this.height);
             // ctx.strokeRect(x, y - this.speed, this.width, this.speed);
@@ -729,7 +728,7 @@ export class Player {
             /*Отрисовываем предсказанную позицию персонажа в следующем кадре с учетом интерполяции. Это нужно только для 
             тестирования.*/
             // ctx.lineWidth = 1;
-            // ctx.strokeStyle = '#ff9100';
+            // ctx.strokeStyle = 'rgba(255, 153, 0, 1)';
             // ctx.strokeRect(x + this.speed, y, this.width, this.height);
             // ctx.strokeRect(x - this.speed, y, this.width, this.height);
             // ctx.strokeRect(x, y - this.speed, this.width, this.height);
@@ -742,7 +741,7 @@ export class Player {
             /*Отрисовываем предсказанный пукть, который пройдет персонаж в следующем кадре без учета интерполяции. Это 
             нужно только для тестирования.*/
             // ctx.lineWidth = 1;
-            // ctx.strokeStyle = '#00c3ff';
+            // ctx.strokeStyle = 'rgba(14, 215, 230, 1)';
             // ctx.strokeRect(this.x + this.width, this.y, this.speed, this.height);
             // ctx.strokeRect(this.x - this.speed, this.y, this.speed, this.height);
             // ctx.strokeRect(this.x, this.y - this.speed, this.width, this.speed);
@@ -751,7 +750,7 @@ export class Player {
             /*Отрисовываем предсказанную позицию персонажа в следующем кадре без учета интерполяции. Это нужно только 
             для тестирования.*/
             // ctx.lineWidth = 1;
-            // ctx.strokeStyle = '#ff9100';
+            // ctx.strokeStyle = 'rgba(255, 153, 0, 1)';
             // ctx.strokeRect(this.x + this.speed, this.y, this.width, this.height);
             // ctx.strokeRect(this.x - this.speed, this.y, this.width, this.height);
             // ctx.strokeRect(this.x, this.y - this.speed, this.width, this.height);

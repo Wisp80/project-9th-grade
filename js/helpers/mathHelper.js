@@ -1,7 +1,6 @@
 'use strict';
 import { ctx, canvasData } from '../canvas/canvas.js';
 import { graphicsHelper } from './graphicsHelper.js';
-import { game } from '../main/game.js';
 
 export const mathHelper = {
     /*Метод "getRandomIntFromInterval()" генерирует случайное целое число в указанном пределе.
@@ -630,11 +629,11 @@ export const mathHelper = {
         };
 
         /*Проверяем не получается ли так, что все точки в массиве "intersectionPoints" совпадают с вершинами 
-        многоугольника, при этом отрезок луча находится либо выше минимальной X-координаты многоугольника, либо ниже 
-        максимальной X-координаты. Если это так, то возвращаем false, как знак того, что точка находится снаружи 
+        многоугольника, при этом отрезок луча находится либо выше минимальной Y-координаты многоугольника, либо ниже 
+        максимальной Y-координаты. Если это так, то возвращаем false, как знак того, что точка находится снаружи 
         многоугольника.*/
         if (
-            (point.x <= minX || point.x >= maxX) &&
+            (point.y <= minY || point.y >= maxY) &&
             intersectionPoints.length === pointsEqualToPolygonVerticesCount
         ) { return false };
 

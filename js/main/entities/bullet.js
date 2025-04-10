@@ -153,6 +153,7 @@ class Bullet {
                     this.enemies.splice(this.enemies.indexOf(enemy), 1);
                     this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
                     this.bullets.splice(this.bullets.indexOf(this), 1);
+                    game.currentKilledEnemiesCount++;
                 };
             };
         };
