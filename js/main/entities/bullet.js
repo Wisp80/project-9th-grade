@@ -132,6 +132,7 @@ class Bullet {
         if (this.x < 0 || this.x > canvasData.canvasWidth || this.y < 0 || this.y > canvasData.canvasHeight) {
             this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
             this.bullets.splice(this.bullets.indexOf(this), 1);
+            return;
         };
 
         /*Перебираем все камни и проверяем не пересекается ли пуля с одним из них. Если это так, то удаляем пулю.*/
@@ -139,6 +140,7 @@ class Bullet {
             if (mathHelper.isPointInsidePolygon({ x: this.x, y: this.y }, this.rocks[i].vertices)) {
                 this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
                 this.bullets.splice(this.bullets.indexOf(this), 1);
+                return;
             };
         };
 
@@ -154,6 +156,7 @@ class Bullet {
                     this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
                     this.bullets.splice(this.bullets.indexOf(this), 1);
                     game.currentKilledEnemiesCount++;
+                    return;
                 };
             };
         };
@@ -175,6 +178,7 @@ class Bullet {
 
             this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
             this.bullets.splice(this.bullets.indexOf(this), 1);
+            return;
         };
     };
 

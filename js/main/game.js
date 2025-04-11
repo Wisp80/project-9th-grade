@@ -386,11 +386,14 @@ export const game = {
         this.currentLevel++;
 
         if (this.currentLevel % 3 === 0) { this.currrentEnemiesCount++ };
-        if (this.currentLevel % 5 === 0 && this.currentRocksCount > 0) { this.currentRocksCount-- };
+        if (this.currentLevel % 2 === 0 && this.currentEnemiesSpeed < 100) { this.currentEnemiesSpeed += 5 };
+        if (this.currentLevel % 2 === 0 && this.currentEnemiesShotDelay > 20) { this.currentEnemiesShotDelay -= 2 };
+
+        if (this.currentLevel % 10 === 0 && this.currentRocksCount > 2) { this.currentRocksCount-- };
         if (this.currentLevel % 5 === 0) { this.currentPuddlesCount++; };
 
         for (let i = 0; i < this.currrentEnemiesCount; i++) {
-            
+
             /*
             x, y,
             width, height,

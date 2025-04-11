@@ -83,19 +83,19 @@ class Rock {
         них за пределы холста. Если это так, то корректируем все вершины многоугольника, который обозначает форму 
         камня.*/
         for (let i = 0; i < this.vertices.length; i++) {
-            while (this.vertices[i].x <= 55) {
+            while (this.vertices[i].x <= canvasData.cellWidth * 2 + 5) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x += canvasData.cellWidth };
             };
 
-            while (this.vertices[i].x >= canvasData.canvasWidth - 55) {
+            while (this.vertices[i].x >= canvasData.canvasWidth - (canvasData.cellWidth * 2 + 5)) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x -= canvasData.cellWidth };
             };
 
-            while (this.vertices[i].y <= 55) {
+            while (this.vertices[i].y <= canvasData.cellHeight * 2 + 5) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y += canvasData.cellHeight };
             };
 
-            while (this.vertices[i].y >= canvasData.canvasHeight - 55) {
+            while (this.vertices[i].y >= canvasData.canvasHeight - (canvasData.cellHeight * 2 + 5)) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y -= canvasData.cellHeight };
             };
         };

@@ -83,19 +83,19 @@ class Puddle {
         них за пределы холста. Если это так, то корректируем все вершины многоугольника, который обозначает форму 
         лужи.*/
         for (let i = 0; i < this.vertices.length; i++) {
-            while (this.vertices[i].x <= 25) {
+            while (this.vertices[i].x <= canvasData.cellWidth) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x += canvasData.cellWidth };
             };
 
-            while (this.vertices[i].x >= canvasData.canvasWidth - 25) {
+            while (this.vertices[i].x >= canvasData.canvasWidth - canvasData.cellWidth) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].x -= canvasData.cellWidth };
             };
 
-            while (this.vertices[i].y <= 25) {
+            while (this.vertices[i].y <= canvasData.cellHeight) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y += canvasData.cellHeight };
             };
 
-            while (this.vertices[i].y >= canvasData.canvasHeight - 25) {
+            while (this.vertices[i].y >= canvasData.canvasHeight - canvasData.cellHeight) {
                 for (let j = 0; j < this.vertices.length; j++) { this.vertices[j].y -= canvasData.cellHeight };
             };
         };
