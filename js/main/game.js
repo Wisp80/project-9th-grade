@@ -7,7 +7,7 @@ import { rocksDefaultSettings } from '../settings/settings.js';
 import { puddlesDefaultSettings } from '../settings/settings.js';
 import { Player } from './entities/player.js';
 
-/*Объект "game" представляет из себя главный объект игры, обрабатывающий все данные игры.*/
+/*Объект "game" представляет собой главный объект игры, обрабатывающий все данные игры.*/
 export const game = {
     /*Свойство, которое хранит ID последнего вызова функции "requestAnimationFrame()". Это свойство используется для
     подчистки работы функции "requestAnimationFrame()".*/
@@ -16,10 +16,10 @@ export const game = {
     /*Свойство "totalCalculatedFrames" нужно для хранения количества рассчитанных кадров за всю игру.*/
     totalCalculatedFrames: 0,
     /*Свойство "calculatedFramesForLastSecond" нужно для хранения количества рассчитанных кадров за последнюю секунду.
-    Это свойство используется для рассчета FPS для рассчитанных кадров.*/
+    Это свойство используется для расчета FPS для рассчитанных кадров.*/
     calculatedFramesForLastSecond: 0,
-    /*Свойство "lastCalculatedFramesFPSTime" нужно для хранения времени, когда последний раз расчитывался FPS для 
-    рассчитанных кадров. Это свойство используется для рассчета FPS для рассчитанных кадров.*/
+    /*Свойство "lastCalculatedFramesFPSTime" нужно для хранения времени, когда последний раз рассчитывался FPS для
+    рассчитанных кадров. Это свойство используется для расчета FPS для рассчитанных кадров.*/
     lastCalculatedFramesFPSTime: 0,
     /*Свойство "calculatedFramesFPS" нужно для хранения текущего значения FPS для рассчитанных кадров.*/
     calculatedFramesFPS: 0,
@@ -27,17 +27,17 @@ export const game = {
     /*Свойство "totalRenderedFrames" нужно для хранения количества отрисованных кадров за всю игру.*/
     totalRenderedFrames: 0,
     /*Свойство "renderedFramesForLastSecond" нужно для хранения количества отрисованных кадров за последнюю секунду. 
-    Это свойство используется для рассчета FPS для отрисованных кадров.*/
+    Это свойство используется для расчета FPS для отрисованных кадров.*/
     renderedFramesForLastSecond: 0,
-    /*Свойство "lastRenderedFramesFPSTime" нужно для хранения времени, когда последний раз расчитывался FPS для 
-    отрисованных кадров. Это свойство используется для рассчета FPS для рассчитанных кадров.*/
+    /*Свойство "lastRenderedFramesFPSTime" нужно для хранения времени, когда последний раз рассчитывался FPS для
+    отрисованных кадров. Это свойство используется для расчета FPS для рассчитанных кадров.*/
     lastRenderedFramesFPSTime: 0,
     /*Свойство "renderedFramesFPS" нужно для хранения текущего значения FPS для отрисованных кадров.*/
     renderedFramesFPS: 0,
 
     /*Свойство "fixedTimeStep" нужно для хранения фиксированного временного шага для расчета данных для кадров игры в 60 
     FPS. Этим свойством мы указываем, чтобы данные для кадров рассчитывались не чаще, чем 60 раз в секунду, то есть на 
-    рассчет данных для одного кадра должно уходить не меньше ≈16.67 милисекунд. При этом отрисовка рассчитанных данных 
+    расчет данных для одного кадра должно уходить не меньше ≈16.67 миллисекунд. При этом отрисовка рассчитанных данных
     для кадров не ограничивается этим свойством.*/
     fixedTimeStep: 1000 / 60,
     /*Свойство "currentFrameSteps" нужно для хранения значения, которое обозначает сколько кадров было рассчитано за 
@@ -47,17 +47,17 @@ export const game = {
     рассчитано за время одного вызов метода "gameLoop()".*/
     maxStepsPerFrame: 1,
     /*Свойство "accumulatedTimeForCalculatingFrameData" нужно для хранения значения, которое обозначает время, 
-    накопленное для рассчета данных для кадров, то есть время, накопленное между всеми вызовами метода "gameLoop()".*/
+    накопленное для расчета данных для кадров, то есть время, накопленное между всеми вызовами метода "gameLoop()".*/
     accumulatedTimeForCalculatingFrameData: 0,
     /*Свойство "lastRenderedFrameTime" нужно для хранения значения, которое обозначает время, когда последний раз были
     отрисованы данные для кадра, то есть время последнего вызова метода "gameLoop()".*/
     lastRenderedFrameTime: 0,
-    /*Множитель для рассчета локальной переменной "maxDeltaTime" в метода "gameLoop()".*/
+    /*Множитель для расчета локальной переменной "maxDeltaTime" в метода "gameLoop()".*/
     maxDeltaTimeMultiplier: 3,
     /*Свойство "frameInterpolation" содержит флаг для указания использовать ли интерполяцию кадров или нет.*/
     frameInterpolation: true,
 
-    /*Метод "gameLoop()" занимается обробаткой цикла игры.
+    /*Метод "gameLoop()" занимается обработкой цикла игры.
 
     Метод "gameLoop()" принимает следующие параметры:
     1. "timestamp" - это числовой параметр, указывающий время текущего вызова метода "gameLoop()".
@@ -79,7 +79,7 @@ export const game = {
         timestamp, ctx, canvasData, controls, game,
         createBullet, createEnemy, createRock, createPuddle
     ) {
-        /*Подчишаем работы предыдущего вызова функции "requestAnimationFrame()" при помощи функции 
+        /*Подчищаем работу предыдущего вызова функции "requestAnimationFrame()" при помощи функции
         "cancelAnimationFrame()".*/
         cancelAnimationFrame(this.rafID);
 
@@ -100,7 +100,7 @@ export const game = {
         
         Когда функция "requestAnimationFrame()" вызывает переданную в нее callback-функцию, она передает в эту 
         callback-функцию параметр (в нашем случае это переменная "timestamp"), обозначающий время вызова этой 
-        callback-функции в милисекундах, а точнее время в миллисекундах с момента загрузки страницы с точностью до 
+        callback-функции в миллисекундах, а точнее время в миллисекундах с момента загрузки страницы с точностью до
         микросекунд.
         
         Для генерации кадров функция "requestAnimationFrame()" подходит лучше, чем функция "setTimeout()" по следующим
@@ -143,12 +143,12 @@ export const game = {
         /*Обновляем время последнего вызова метода "gameLoop()".*/
         this.lastRenderedFrameTime = timestamp;
 
-        /*Увеличиваем время, накопленное для рассчета данных для кадров, на время, которое прошло с последнего вызова 
+        /*Увеличиваем время, накопленное для расчета данных для кадров, на время, которое прошло с последнего вызова
         метода "gameLoop()".*/
         this.accumulatedTimeForCalculatingFrameData += deltaTime;
 
-        /*Рассчитываем данные для следующего кадра, если накопилось времения хотя бы на рассчет данных для одного кадра. 
-        Если накопилось времени больше, чем на рассчет данных для одного кадра, то делаем наперед расчеты данных для 
+        /*Рассчитываем данные для следующего кадра, если накопилось времени хотя бы на расчет данных для одного кадра.
+        Если накопилось времени больше, чем на расчет данных для одного кадра, то делаем наперед расчеты данных для
         нескольких кадров, но не больше, чем указано в свойстве "maxStepsPerFrame".*/
         while (
             this.accumulatedTimeForCalculatingFrameData >= this.fixedTimeStep &&
@@ -159,8 +159,8 @@ export const game = {
                 controls, canvasData, game,
                 createBullet, createEnemy, createRock, createPuddle);
 
-            /*Поскольку рассчитали данные для одного кадра, то вычитаем из времени, накопленного для рассчета данных для 
-            кадров, время, необходимое на рассчет данных для одного кадра.*/
+            /*Поскольку рассчитали данные для одного кадра, то вычитаем из времени, накопленного для расчета данных для
+            кадров, время, необходимое на расчет данных для одного кадра.*/
             this.accumulatedTimeForCalculatingFrameData -= this.fixedTimeStep;
 
             /*Указываем, что за текущий вызов метода "gameLoop()" рассчитали данные для одного кадра больше.*/
@@ -170,7 +170,7 @@ export const game = {
             this.updateCalculatedFPS(timestamp);
         };
 
-        /*Закончив все рассчеты данных для кадров, обнуляем свойство "currentFrameSteps" для следующего вызова метода 
+        /*Закончив все расчеты данных для кадров, обнуляем свойство "currentFrameSteps" для следующего вызова метода
         "gameLoop()".*/
         this.currentFrameSteps = 0;
 
@@ -181,7 +181,7 @@ export const game = {
         отрисовки. 
         
         Для использования интерполяции кадров нужно рассчитывать коэффициент интерполяции, то есть коэффициент смещения 
-        между последним и следующим кадром. Этот коэффициент находится путем деления времени, накопленного для рассчета 
+        между последним и следующим кадром. Этот коэффициент находится путем деления времени, накопленного для расчета
         данных для кадров, на фиксированной временной шаг для расчета данных для кадров игры. Этот коэффициент всегда
         находится между 0 (начало кадра) и 1 (конец кадра).
         
@@ -233,7 +233,7 @@ export const game = {
         };
     },
 
-    /*Метод "renderPreparedDataForNextFrame()" отрисовывает подготавленные данные для следующего кадра.
+    /*Метод "renderPreparedDataForNextFrame()" отрисовывает подготовленные данные для следующего кадра.
 
     Метод "renderPreparedDataForNextFrame()" принимает следующие параметры:
     1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
@@ -265,7 +265,7 @@ export const game = {
             /*Отрисовываем очки здоровья персонажа при помощи метода "drawPlayerHealthPoints()".*/
             this.drawPlayerHealthPoints(ctx);
         } else {
-            /*Если игра закончилась, то отрисовываем экран конца игры при помощи метода "drawGameOverScreen()".*/
+            /*Если игра закончилась, то при помощи метода "drawGameOverScreen()" отрисовываем экран конца игры.*/
             this.drawGameOverScreen(ctx, canvasData);
         };
 
@@ -291,7 +291,7 @@ export const game = {
             this.calculatedFramesFPS = this.calculatedFramesForLastSecond;
             /*Сбрасываем количество рассчитанных кадров за последнюю секунду.*/
             this.calculatedFramesForLastSecond = 0;
-            /*Обновляем время, когда последний раз расчитывался FPS для рассчитанных кадров.*/
+            /*Обновляем время, когда последний раз рассчитывался FPS для рассчитанных кадров.*/
             this.lastCalculatedFramesFPSTime = timestamp;
         };
     },
@@ -314,12 +314,12 @@ export const game = {
             this.renderedFramesFPS = this.renderedFramesForLastSecond;
             /*Сбрасываем количество отрисованных кадров за последнюю секунду.*/
             this.renderedFramesForLastSecond = 0;
-            /*Обновляем время, когда последний раз расчитывался FPS для отрисованных кадров.*/
+            /*Обновляем время, когда последний раз рассчитывался FPS для отрисованных кадров.*/
             this.lastRenderedFramesFPSTime = timestamp;
         };
     },
 
-    /*Свойство "players" нужно для хранения объекта, содержащего объекты с данными персонажах.*/
+    /*Свойство "players" нужно для хранения объекта, содержащего объекты с данными о персонажах.*/
     players: {},
     /*Свойство "enemies" нужно для хранения массива, содержащего объекты с данными о врагах.*/
     enemies: [],
@@ -341,8 +341,8 @@ export const game = {
     currentLevel: 0,
     /*Свойство "currentKilledEnemiesCount" нужно для хранения количества убитых врагов.*/
     currentKilledEnemiesCount: 0,
-    /*Свойство "currrentEnemiesCount" нужно для хранения количества врагов на текущем уровне.*/
-    currrentEnemiesCount: enemiesDefaultSettings.startEnemiesCount,
+    /*Свойство "currentEnemiesCount" нужно для хранения количества врагов на текущем уровне.*/
+    currentEnemiesCount: enemiesDefaultSettings.startEnemiesCount,
     /*Свойство "currentEnemiesSpeed" нужно для хранения скорости передвижения врагов на текущем уровне.*/
     currentEnemiesSpeed: enemiesDefaultSettings.startEnemiesSpeed,
     /*Свойство "currentEnemiesShotDelay" нужно для хранения задержки между выстрелами врагов на текущем уровне.*/
@@ -351,16 +351,16 @@ export const game = {
     currentEnemiesBulletSpeedX: enemiesDefaultSettings.startEnemiesBulletSpeedX,
     /*Свойство "currentEnemiesBulletSpeed" нужно для хранения скорости пуль врагов по оси Y на текущем уровне.*/
     currentEnemiesBulletSpeedY: enemiesDefaultSettings.startEnemiesBulletSpeedY,
-    /*Создаем cвойство "currentRocksCount" для хранения количества камней на текущем уровне.*/
+    /*Свойство "currentRocksCount" нужно для хранения количества камней на текущем уровне.*/
     currentRocksCount: rocksDefaultSettings.startRocksCount,
-    /*Создаем cвойство "currentPuddlesCount" для хранения количества луж на текущем уровне.*/
+    /*Свойство "currentPuddlesCount" нужно для хранения количества луж на текущем уровне.*/
     currentPuddlesCount: puddlesDefaultSettings.startPuddlesCount,
-    /*Создаем свойство "finished", которое обозначает флаг, указывающий закончилась игра или нет.*/
+    /*Свойство "finished" нужно для обозначения флага, указывающего закончилась игра или нет.*/
     finished: false,
 
     /*Метод "generateLevel()" генерирует новый уровень после того, как персонаж убил всех врагов.
     
-    Метод "generateLevel()" принимает следующие параметры:    
+    Метод "generateLevel()" принимает следующие параметры:
     1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.   
     2. "createEnemy" - это параметр в виде функции, которая создает объект, содержащий данные о враге, на основе класса 
     "Enemy" и помещает этот объект в массив, куда должны сохраняться такие объекты.
@@ -385,14 +385,14 @@ export const game = {
         this.puddleIDs.length = 0;
         this.currentLevel++;
 
-        if (this.currentLevel % 3 === 0) { this.currrentEnemiesCount++ };
+        if (this.currentLevel % 3 === 0) { this.currentEnemiesCount++ };
         if (this.currentLevel % 2 === 0 && this.currentEnemiesSpeed < 100) { this.currentEnemiesSpeed += 5 };
         if (this.currentLevel % 2 === 0 && this.currentEnemiesShotDelay > 20) { this.currentEnemiesShotDelay -= 2 };
 
         if (this.currentLevel % 10 === 0 && this.currentRocksCount > 2) { this.currentRocksCount-- };
         if (this.currentLevel % 5 === 0) { this.currentPuddlesCount++; };
 
-        for (let i = 0; i < this.currrentEnemiesCount; i++) {
+        for (let i = 0; i < this.currentEnemiesCount; i++) {
 
             /*
             x, y,
@@ -540,13 +540,13 @@ export const game = {
         );
     },
 
-    /*Метод "resetGameData()" сбрасывает все данные игры на стартовые.    
+    /*Метод "resetGameData()" сбрасывает все данные игры на стартовые.
     Метод "resetGameData()" не принимает никаких параметров.
     Метод "resetGameData()" ничего не возвращает.*/
     resetGameData: function () {
         this.currentLevel = 0;
         this.currentKilledEnemiesCount = 0;
-        this.currrentEnemiesCount = 4;
+        this.currentEnemiesCount = 4;
         this.currentRocksCount = 4;
         this.currentPuddlesCount = 4;
         this.players.playerOne.x = 0;

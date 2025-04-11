@@ -1,5 +1,5 @@
 'use strict';
-import { mathHelper } from '../helpers/mathHelper.js';
+import { mathHelper } from './mathHelper.js';
 
 // console.log(mathHelper.doTwoLineSegmentsIntersect(
 //     { x: 2, y: 5 }, { x: 6, y: 2 }, { x: 3, y: 1 }, { x: 4, y: 5 }
