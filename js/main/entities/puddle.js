@@ -46,7 +46,7 @@ class Puddle {
         this.height = height;
         /*Цвет обводки лужи.*/
         this.strokeStyle = strokeStyle;
-        /*Ширина овбодки лужи.*/
+        /*Ширина обводки лужи.*/
         this.lineWidth = lineWidth;
         /*Цвет заливки лужи.*/
         this.fillStyle = fillStyle;

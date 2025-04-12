@@ -115,7 +115,7 @@ export const game = {
         тратить ресурсы.
         
         Рекурсивно вызываем функцию "requestAnimationFrame()", которая будет рекурсивно вызывать метод "gameLoop()", что
-        приведит к бесконченому запуску циклов игры.*/
+        приведет к бесконечному запуску циклов игры.*/
         this.rafID = requestAnimationFrame(
             (timestamp) => this.gameLoop(
                 timestamp, ctx, canvasData, controls, game,

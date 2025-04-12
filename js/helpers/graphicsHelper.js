@@ -275,12 +275,10 @@ export const graphicsHelper = {
             const newR = Math.floor(r * darkenFactor);
             const newG = Math.floor(g * darkenFactor);
             const newB = Math.floor(b * darkenFactor);
-            /*Сохраняем исходную прозрачность.*/
-            const newA = a;
 
             /*Из полученных компонентов цвета в формате RGBA формируем строковое представление этого цвета в формате 
-            RGBA и добавляем его в массив "colors".*/
-            colors.push(`rgba(${newR}, ${newG}, ${newB}, ${newA})`);
+            RGBA и добавляем его в массив "colors". Сохраняем исходную прозрачность.*/
+            colors.push(`rgba(${newR}, ${newG}, ${newB}, ${a})`);
         };
 
         /*Если не указано, чтобы последовательность цветов была от темного к светлому, то возвращаем массив элементов, 
@@ -319,7 +317,7 @@ export const graphicsHelper = {
         /*Избавляемся от дубликатов вершин многоугольника, если таковые имеются, при помощи метода 
         "mathHelper.removeDuplicatesFromPoints()".*/
         vertices = mathHelper.removeDuplicatesFromPoints(vertices);
-        
+
         /*Создаем переменную "center" для хранения точки, относительно которой будет масштабироваться фигура.*/
         const center = { x: 0, y: 0 };
 
@@ -403,5 +401,80 @@ export const graphicsHelper = {
                 ctx.stroke(path);
             };
         };
+    },
+
+    /*Метод "createGradientBasedOnTotalCalculatedFrames()" создает градиент в прямоугольной области на основе общего
+    количества рассчитанных кадров в игре.
+    
+    Метод "createGradientBasedOnTotalCalculatedFrames()" принимает следующие параметры:
+    1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+    2. "totalCalculatedFrames" - это числовой параметр, указывающий общее количества рассчитанных кадров в игре.
+    3. "x" - это числовой параметр, указывающий X-координату верхней левой точки области, в которой должен быть создан
+    градиент.
+    4. "y" - это числовой параметр, указывающий Y-координату верхней левой точки области, в которой должен быть создан
+    градиент.
+    5. "width" - это числовой параметр, указывающий ширину области, в которой должен быть создан градиент.
+    6. "height" - это числовой параметр, указывающий высоту области, в которой должен быть создан градиент.
+
+    Метод "createGradientBasedOnTotalCalculatedFrames()" возвращает созданный градиент.*/
+    createGradientBasedOnTotalCalculatedFrames(ctx, totalCalculatedFrames, x, y, width, height) {
+        /*Остаток от деления числа на 360 всегда будет в диапазоне от 0 до 359. При помощи этого на основе количества
+        рассчитанных кадров за всю игру рассчитываем градусы. Мы переводим полученные градусы в радианы, так как дальше 
+        мы используем методы "Math.cos()" и "Math.sin()", использующие радианы в качестве параметров. Чтобы получить 
+        радианы умножаем градусы на "(π / 180)".*/
+        const angle = (totalCalculatedFrames % 360) * Math.PI / 180;
+
+        /*В контексте функции "createLinearGradient()" длина градиента - это расстояние между начальной и конечной 
+        точками градиента. Градиент будет плавно перетекать от цвета к цвету вдоль этой линии. Если линия короткая, то 
+        цвета резко сменяются, а если длинная, то переход между цветами плавный. В нашем коде градиент вращается вокруг 
+        центра, поэтому его длина должна быть не меньше максимально возможного расстояния внутри прямоугольной области 
+        персонажа, то есть диагонали прямоугольника, чтобы при любом угле градиент полностью покрывал фигуру. Поэтому 
+        находим длину диагонали прямоугольной области персонажа по теореме Пифагора.*/
+        const length = Math.sqrt(width * width + height * height);
+
+        /*Рассчитываем конечные точки градиента. Эти точки мы рассчитываем из центра прямоугольной области прибавляя или
+        вычитая половину длины диагонали этой прямоугольной области, чтобы в итоге в сумме получалась целая диагональ. 
+        
+        Если отрисовывать градиент, используя такие точки, то будем получать градиент строго по диагонали. А нам нужно,
+        чтобы эта диагональ постоянно смещалась по кругу. Поэтому нужно умножать половину длины диагонали прямоугольной
+        области персонажа на какой-то коэффициент смещения. Известно, что для любого угла его косинус говорит, насколько 
+        двигаться по оси X, а его синус говорит, насколько двигаться по оси Y. Соответственно, умножаем половину длины
+        диагонали прямоугольной области персонажа на косинус угла, когда рассчитываем X-координаты, и на синус угла, 
+        когда рассчитываем Y-координаты.*/
+        const centerX = x + width / 2;
+        const centerY = y + height / 2;
+        const cosAngle = Math.cos(angle);
+        const sinAngle = Math.sin(angle);
+        const gradientX1 = centerX + (length / 2) * cosAngle;
+        const gradientY1 = centerY + (length / 2) * sinAngle;
+        const gradientX2 = centerX - (length / 2) * cosAngle;
+        const gradientY2 = centerY - (length / 2) * sinAngle;
+
+        /*Создаем градиент, используя рассчитанные конечные точки.*/
+        const gradient = ctx.createLinearGradient(gradientX1, gradientY1, gradientX2, gradientY2);
+
+        /*Hue (оттенок) - это компонент цветовой модели HSL (Hue, Saturation, Lightness), который определяет цвет на 
+        цветовом круге в градусах: 0° - красный, 120° - зеленый, 240° - синий, 360° - снова красный. Высчитываем hue на
+        основе рассчитанных кадров за всю игру.*/
+        const hue = totalCalculatedFrames % 360;
+        const saturation = 50;
+        const lightness = 50;
+
+        /*Добавляем цветовые остановки (от 0 до 1). Цветовые остановки - это точки, где градиент меняет один цвет на 
+        другой.*/
+        gradient.addColorStop(0, `hsl(${hue}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.1, `hsl(${(hue + 10) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.2, `hsl(${(hue + 20) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.3, `hsl(${(hue + 35) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.4, `hsl(${(hue + 45) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.5, `hsl(${(hue + 60) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.6, `hsl(${(hue + 70) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.7, `hsl(${(hue + 85) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.8, `hsl(${(hue + 95) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(0.9, `hsl(${(hue + 110) % 360}, ${saturation}%, ${lightness}%)`);
+        gradient.addColorStop(1, `hsl(${(hue + 120) % 360}, ${saturation}%, ${lightness}%)`);
+
+        /*Возврашаем созданный градиент.*/
+        return gradient;
     }
 };

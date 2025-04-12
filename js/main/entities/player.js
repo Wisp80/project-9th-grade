@@ -1,5 +1,6 @@
 'use strict';
 import { mathHelper } from '../../helpers/mathHelper.js';
+import { graphicsHelper } from '../../helpers/graphicsHelper.js';
 
 /*Класс "Player" создает объекты, содержащие данные о персонаже.
 
@@ -166,33 +167,30 @@ export class Player {
             const normalizedCurrentSpeedX = currentSpeed / length;
             const normalizedCurrentSpeedY = currentSpeed / length;
             /*Вычисляем компоненты правильного вектора скорости при диагональном движении.*/
-            this.currentSpeedX = normalizedCurrentSpeedX * currentSpeed;
+            this.currentSpeedX = 1 * normalizedCurrentSpeedX * currentSpeed;
             this.currentSpeedY = -1 * normalizedCurrentSpeedY * currentSpeed;
         };
 
-        if (controls.isDKeyDown && controls.isSKeyDown) {
+        /*Создаем вспомогательную локальную функцию "correctDiagonalMovementSpeed()", которая корректирует скорость 
+        персонажа при диагональном движении.
+        
+        Функция "correctDiagonalMovementSpeed()" принимает следующие параметры:
+        1. "currentSpeed" - это числовой параметр, указывающий текущую скорость передвижения персонажа.
+        2. "xDirection" - это числовой параметр, указывающий направление персонажа по оси X (1 - влево, -1 вправо).
+        3. "yDirection" - это числовой параметр, указывающий направление персонажа по оси Y (1 - вниз, -1 вверх).
+
+        Функция "correctDiagonalMovementSpeed()" ничего не возвращает.*/
+        const correctDiagonalMovementSpeed = (currentSpeed, xDirection, yDirection) => {
             const length = Math.sqrt(currentSpeed * currentSpeed + currentSpeed * currentSpeed);
             const normalizedCurrentSpeedX = currentSpeed / length;
             const normalizedCurrentSpeedY = currentSpeed / length;
-            this.currentSpeedX = normalizedCurrentSpeedX * currentSpeed;
-            this.currentSpeedY = normalizedCurrentSpeedY * currentSpeed;
+            this.currentSpeedX = xDirection * normalizedCurrentSpeedX * currentSpeed;
+            this.currentSpeedY = yDirection * normalizedCurrentSpeedY * currentSpeed;
         };
 
-        if (controls.isSKeyDown && controls.isAKeyDown) {
-            const length = Math.sqrt(currentSpeed * currentSpeed + currentSpeed * currentSpeed);
-            const normalizedCurrentSpeedX = currentSpeed / length;
-            const normalizedCurrentSpeedY = currentSpeed / length;
-            this.currentSpeedX = -1 * normalizedCurrentSpeedX * currentSpeed;
-            this.currentSpeedY = normalizedCurrentSpeedY * currentSpeed;
-        };
-
-        if (controls.isAKeyDown && controls.isWKeyDown) {
-            const length = Math.sqrt(currentSpeed * currentSpeed + currentSpeed * currentSpeed);
-            const normalizedCurrentSpeedX = currentSpeed / length;
-            const normalizedCurrentSpeedY = currentSpeed / length;
-            this.currentSpeedX = -1 * normalizedCurrentSpeedX * currentSpeed;
-            this.currentSpeedY = -1 * normalizedCurrentSpeedY * currentSpeed;
-        };
+        if (controls.isDKeyDown && controls.isSKeyDown) { correctDiagonalMovementSpeed(currentSpeed, 1, 1) };
+        if (controls.isSKeyDown && controls.isAKeyDown) { correctDiagonalMovementSpeed(currentSpeed, -1, 1) };
+        if (controls.isAKeyDown && controls.isWKeyDown) { correctDiagonalMovementSpeed(currentSpeed, -1, -1) };
 
         /*Зануляем текущую скорость по оси X, если одновременно нажаты или отжаты кнопки "D" и "A".*/
         if ((controls.isDKeyDown && controls.isAKeyDown) || (!controls.isAKeyDown && !controls.isDKeyDown)) {
@@ -336,19 +334,13 @@ export class Player {
         this.processShootingControls(controls, game, createBullet);
     };
 
-    /*Метод "moveX()" обрабатывает движение персонажа по оси X.
+    /*Метод "checkRocksCollisionX()" обрабатывает коллизию персонажа с камнями при движении по оси X.
     
-    Метод "moveX()" принимает следующие параметры:
-    1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+    Метод "checkRocksCollisionX()" принимает следующие параметры:
+    1. "nextX" - это числовой параметр, указывающий X-координату персонажа в следующем кадре.
 
-    Метод "moveX()" ничего не возвращает.*/
-    moveX(canvasData) {
-        /*Сохраняем предыдущую X-координату персонажа. Это нужно для отрисовки персонажа с учетом интерполяции.*/
-        this.previousX = this.x;
-        /*Создаем переменную "nextX" для хранения X-координаты персонажа в следующем кадре, которую "предсказываем" в 
-        ходе работы этого метода. Изначально эта X-координата равна текущей X-координате увеличенной на текущую скорость 
-        персонажа по оси X.*/
-        let nextX = this.x + this.currentSpeedX;
+    Метод "checkRocksCollisionX()" возвращает откорректированную X-координату персонажа в следующем кадре.*/
+    checkRocksCollisionX(nextX) {
         /*Создаем переменную "isPredictedXChanged", которая обозначает флаг, менялась ли предсказываемая X-координата
         персонажа для следующего кадра или нет.*/
         let isPredictedXChanged = false;
@@ -452,25 +444,57 @@ export class Player {
             };
         };
 
-        /*Проверяем не получается ли так, что предсказываемая X-координатой персонажа в следующем кадре находится за
+        /*Возвращаем откорректированную X-координату персонажа в следующем кадре.*/
+        return nextX;
+    };
+
+    /*Метод "checkCanvasCollisionX()" обрабатывает коллизию персонажа с холстом при движении по оси X.
+    
+    Метод "checkCanvasCollisionX()" принимает следующие параметры:
+    1. "nextX" - это числовой параметр, указывающий X-координату персонажа в следующем кадре.
+    2. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+
+    Метод "checkCanvasCollisionX()" возвращает откорректированную X-координату персонажа в следующем кадре.*/
+    checkCanvasCollisionX(nextX, canvasData) {
+        /*Проверяем не получается ли так, что предсказываемая X-координата персонажа в следующем кадре находится за 
         пределами холста. Если это так, то корректируем ее.*/
         if (nextX <= 0) { nextX = 1 };
         if (nextX + this.width >= canvasData.canvasWidth) { nextX = canvasData.canvasWidth - this.width };
+        /*Возвращаем откорректированную X-координату персонажа в следующем кадре.*/
+        return nextX;
+    };
+
+    /*Метод "moveX()" обрабатывает движение персонажа по оси X.
+    
+    Метод "moveX()" принимает следующие параметры:
+    1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+
+    Метод "moveX()" ничего не возвращает.*/
+    moveX(canvasData) {
+        /*Сохраняем предыдущую X-координату персонажа. Это нужно для отрисовки персонажа с учетом интерполяции.*/
+        this.previousX = this.x;
+        /*Создаем переменную "nextX" для хранения X-координаты персонажа в следующем кадре, которую "предсказываем" в 
+        ходе работы этого метода. Изначально эта X-координата равна текущей X-координате увеличенной на текущую скорость 
+        персонажа по оси X.*/
+        let nextX = this.x + this.currentSpeedX;
+        /*Обрабатываем коллизию персонажа с камнями при движении по оси X при помощи метода "checkCollisionX()".*/
+        nextX = this.checkRocksCollisionX(nextX);
+        /*Обрабатываем коллизию персонажа с холстом при движении по оси X при помощи метода "checkCanvasCollisionX()".*/
+        nextX = this.checkCanvasCollisionX(nextX, canvasData)
         /*Указываем, что X-координата персонажа в следующем кадре равна полностью откорректированной предсказываемой 
         X-координате персонажа в следующем кадре.*/
         this.x = nextX;
     };
 
-    /*Метод "moveY()" обрабатывает движение персонажа по оси Y.
+    /*Метод "checkRocksCollisionY()" обрабатывает коллизию персонажа с камнями при движении по оси Y.
     
-    Метод "moveY()" принимает следующие параметры:
-    1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+    Метод "checkRocksCollisionY()" принимает следующие параметры:
+    1. "nextY" - это числовой параметр, указывающий Y-координату персонажа в следующем кадре.
+    2. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
 
-    Метод "moveY()" ничего не возвращает.*/
-    moveY(canvasData) {
-        /*Метод "moveY()" работает аналогично, как и метод "moveX()".*/
-        this.previousY = this.y;
-        let nextY = this.y + this.currentSpeedY;
+    Метод "checkRocksCollisionY()" возвращает откорректированную Y-координату персонажа в следующем кадре.*/
+    checkRocksCollisionY(nextY) {
+        /*Метод "checkCollisionY()" работает аналогично, как и метод "checkCollisionX()".*/
         let isPredictedYChanged = false;
 
         if (this.currentSpeedY !== 0 && this.rocks.length > 0) {
@@ -539,8 +563,35 @@ export class Player {
             };
         };
 
+        return nextY;
+    };
+
+    /*Метод "checkCanvasCollisionY()" обрабатывает коллизию персонажа с холстом при движении по оси Y.
+    
+    Метод "checkCanvasCollisionY()" принимает следующие параметры:
+    1. "nextY" - это числовой параметр, указывающий Y-координату персонажа в следующем кадре.
+    2. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+
+    Метод "checkCanvasCollisionY()" возвращает откорректированную Y-координату персонажа в следующем кадре.*/
+    checkCanvasCollisionY(nextY, canvasData) {
+        /*Метод "checkCanvasCollisionY()" работает аналогично, как и метод "checkCanvasCollisionX()".*/
         if (nextY <= 0) { nextY = 1 };
         if (nextY + this.height >= canvasData.canvasHeight) { nextY = canvasData.canvasHeight - this.height };
+        return nextY;
+    };
+
+    /*Метод "moveY()" обрабатывает движение персонажа по оси Y.
+    
+    Метод "moveY()" принимает следующие параметры:
+    1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+
+    Метод "moveY()" ничего не возвращает.*/
+    moveY(canvasData) {
+        /*Метод "moveY()" работает аналогично, как и метод "moveX()".*/
+        this.previousY = this.y;
+        let nextY = this.y + this.currentSpeedY;
+        nextY = this.checkRocksCollisionY(nextY);
+        nextY = this.checkCanvasCollisionY(nextY, canvasData)
         this.y = nextY;
     };
 
@@ -602,8 +653,26 @@ export class Player {
         };
     };
 
-    /*Метод "move()" совмещает вызовы методов "moveX()", "moveY()" и "takeDamageIfTouchedByEnemy()", дополнительно 
-    проверяя не находится ли персонаж в луже.    
+    /*Метод "checkPuddlesCollision()" обрабатывает коллизию персонажа с лужами.
+    Метод "checkPuddlesCollision()" не принимает никаких параметров.
+    Метод "checkPuddlesCollision()" ничего не возвращает.*/
+    checkPuddlesCollision() {
+        const playerVertices = this.findCurrentPlayerVertices();
+
+        /*Проверяем не касается ли персонаж луж. Если это так, то замедляем его.*/
+        for (let i = 0; i < this.puddles.length; i++) {
+            if (mathHelper.doTwoPolygonsIntersect(playerVertices, this.puddles[i].vertices)) {
+                this.slowed = true;
+                return;
+            };
+        };
+
+        /*Если же персонаж не касается луж, то убираем его замедление.*/
+        this.slowed = false;
+    };
+
+    /*Метод "move()" совмещает вызовы методов "moveX()", "moveY()", "takeDamageIfTouchedByEnemy()" и 
+    "checkPuddlesCollision()".    
     
     Метод "move()" принимает следующие параметры:
     1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
@@ -614,16 +683,66 @@ export class Player {
         this.moveX(canvasData);
         this.moveY(canvasData);
         this.takeDamageIfTouchedByEnemy(game);
-        const playerVertices = this.findCurrentPlayerVertices();
+        this.checkPuddlesCollision();
+    };
 
-        for (let i = 0; i < this.puddles.length; i++) {
-            if (mathHelper.doTwoPolygonsIntersect(playerVertices, this.puddles[i].vertices)) {
-                this.slowed = true;
-                return;
-            };
+    /*Метод "drawPredictedPositions()" отрисовывает предсказанные позиции персонажа в следующем кадре.
+
+    Метод "drawPredictedPositions()" принимает следующие параметры:
+    1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+    2. "frameInterpolation" - это булев параметр, указывающий нужно ли делать отрисовку с учетом интерполяции кадров.
+    3. "interpolatedX" - это числовой параметр, указывающий X-координату персонажа с учетом интерполяции кадров.
+    4. "interpolatedY" - это числовой параметр, указывающий Y-координату персонажа с учетом интерполяции кадров.
+    
+    Метод "drawPredictedPositions()" ничего не возвращает.*/
+    drawPredictedPositions(ctx, frameInterpolation, interpolatedX, interpolatedY) {
+        if (frameInterpolation) {
+            /*Отрисовываем предсказанную позицию персонажа в следующем кадре с учетом интерполяции.*/
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255, 153, 0, 1)';
+            ctx.strokeRect(interpolatedX + this.speed, interpolatedY, this.width, this.height);
+            ctx.strokeRect(interpolatedX - this.speed, interpolatedY, this.width, this.height);
+            ctx.strokeRect(interpolatedX, interpolatedY - this.speed, this.width, this.height);
+            ctx.strokeRect(interpolatedX, interpolatedY + this.speed, this.width, this.height);
+        } else {
+            /*Отрисовываем предсказанную позицию персонажа в следующем кадре без учета интерполяции.*/
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255, 153, 0, 1)';
+            ctx.strokeRect(this.x + this.speed, this.y, this.width, this.height);
+            ctx.strokeRect(this.x - this.speed, this.y, this.width, this.height);
+            ctx.strokeRect(this.x, this.y - this.speed, this.width, this.height);
+            ctx.strokeRect(this.x, this.y + this.speed, this.width, this.height);
         };
+    };
 
-        this.slowed = false;
+    /*Метод "drawPredictedPaths()" отрисовывает предсказанные пути персонажа, которые пройдет персонаж в следующем 
+    кадре.
+
+    Метод "drawPredictedPaths()" принимает следующие параметры:
+    1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
+    2. "frameInterpolation" - это булев параметр, указывающий нужно ли делать отрисовку с учетом интерполяции кадров.
+    3. "interpolatedX" - это числовой параметр, указывающий X-координату персонажа с учетом интерполяции кадров.
+    4. "interpolatedY" - это числовой параметр, указывающий Y-координату персонажа с учетом интерполяции кадров.
+    
+    Метод "drawPredictedPaths()" ничего не возвращает.*/
+    drawPredictedPaths(ctx, frameInterpolation, interpolatedX, interpolatedY) {
+        if (frameInterpolation) {
+            /*Отрисовываем предсказанный путь, который пройдет персонаж в следующем кадре, с учетом интерполяции.*/
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(14, 215, 230, 1)';
+            ctx.strokeRect(interpolatedX + this.width, interpolatedY, this.speed - this.width, this.height);
+            ctx.strokeRect(interpolatedX - this.speed + this.width, interpolatedY, this.speed - this.width, this.height);
+            ctx.strokeRect(interpolatedX, interpolatedY - this.speed + this.height, this.width, this.speed - this.height);
+            ctx.strokeRect(interpolatedX, interpolatedY + this.height, this.width, this.speed - this.height);
+        } else {
+            /*Отрисовываем предсказанный путь, который пройдет персонаж в следующем кадре, без учета интерполяции.*/
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(14, 215, 230, 1)';
+            ctx.strokeRect(this.x + this.width, this.y, this.speed - this.width, this.height);
+            ctx.strokeRect(this.x - this.speed + this.width, this.y, this.speed - this.width, this.height);
+            ctx.strokeRect(this.x, this.y - this.speed + this.height, this.width, this.speed - this.height);
+            ctx.strokeRect(this.x, this.y + this.height, this.width, this.speed - this.height);
+        };
     };
 
     /*Метод "draw()" отрисовывает персонажа.
@@ -636,124 +755,45 @@ export class Player {
     
     Метод "draw()" ничего не возвращает.*/
     draw(ctx, interpolationFactor, game) {
-        /*Остаток от деления числа на 360 всегда будет в диапазоне от 0 до 359. При помощи этого на основе количества
-        рассчитанных кадров за всю игру рассчитываем градусы. Мы переводим полученные градусы в радианы, так как дальше 
-        мы используем методы "Math.cos()" и "Math.sin()", использующие радианы в качестве параметров. Чтобы получить 
-        радианы умножаем градусы на "(π / 180)".*/
-        const angle = (game.totalCalculatedFrames % 360) * Math.PI / 180;
-
-        /*В контексте функции "createLinearGradient()" длина градиента - это расстояние между начальной и конечной 
-        точками градиента. Градиент будет плавно перетекать от цвета к цвету вдоль этой линии. Если линия короткая, то 
-        цвета резко сменяются, а если длинная, то переход между цветами плавный. В нашем коде градиент вращается вокруг 
-        центра, поэтому его длина должна быть не меньше максимально возможного расстояния внутри прямоугольной области 
-        персонажа, то есть диагонали прямоугольника, чтобы при любом угле градиент полностью покрывал фигуру. Поэтому 
-        находим длину диагонали прямоугольной области персонажа по теореме Пифагора.*/
-        const length = Math.sqrt(this.width * this.width + this.height * this.height);
-
-        /*Рассчитываем конечные точки градиента. Эти точки мы рассчитываем из центра прямоугольной области прибавляя или
-        вычитая половину длины диагонали этой прямоугольной области, чтобы в итоге в сумме получалась целая диагональ. 
-        
-        Если отрисовывать градиент, используя такие точки, то будем получать градиент строго по диагонали. А нам нужно,
-        чтобы эта диагональ постоянно смещалась по кругу. Поэтому нужно умножать половину длины диагонали прямоугольной
-        области персонажа на какой-то коэффициент смещения. Известно, что для любого угла его косинус говорит, насколько 
-        двигаться по оси X, а его синус говорит, насколько двигаться по оси Y. Соответственно, умножаем половину длины
-        диагонали прямоугольной области персонажа на косинус угла, когда рассчитываем X-координаты, и на синус угла, 
-        когда рассчитываем Y-координаты.*/
-        const centerX = this.x + this.width / 2;
-        const centerY = this.y + this.height / 2;
-        const cosAngle = Math.cos(angle);
-        const sinAngle = Math.sin(angle);
-        const gradientX1 = centerX + (length / 2) * cosAngle;
-        const gradientY1 = centerY + (length / 2) * sinAngle;
-        const gradientX2 = centerX - (length / 2) * cosAngle;
-        const gradientY2 = centerY - (length / 2) * sinAngle;
-
-        /*Создаем градиент, используя рассчитанные конечные точки.*/
-        const gradient = ctx.createLinearGradient(gradientX1, gradientY1, gradientX2, gradientY2);
-
-        /*Hue (оттенок) - это компонент цветовой модели HSL (Hue, Saturation, Lightness), который определяет цвет на 
-        цветовом круге в градусах: 0° - красный, 120° - зеленый, 240° - синий, 360° - снова красный. Высчитываем hue на
-        основе рассчитанных кадров за всю игру.*/
-        const hue = game.totalCalculatedFrames % 360;
-        const saturation = 50;
-        const lightness = 50;
-
-        /*Добавляем цветовые остановки (от 0 до 1). Цветовые остановки - это точки, где градиент меняет один цвет на 
-        другой.*/
-        gradient.addColorStop(0, `hsl(${hue}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(0.1, `hsl(${(hue + 10) % 360}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(0.2, `hsl(${(hue + 20) % 360}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(0.3, `hsl(${(hue + 35) % 360}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(0.4, `hsl(${(hue + 45) % 360}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(0.5, `hsl(${(hue + 60) % 360}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(0.6, `hsl(${(hue + 70) % 360}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(0.7, `hsl(${(hue + 85) % 360}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(0.8, `hsl(${(hue + 95) % 360}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(0.9, `hsl(${(hue + 110) % 360}, ${saturation}%, ${lightness}%)`);
-        gradient.addColorStop(1, `hsl(${(hue + 120) % 360}, ${saturation}%, ${lightness}%)`);
-
         /*Устанавливаем цвет заливки в зависимости получал ли недавно урон персонаж или нет.*/
         if (this.tookDamageRecently) {
             ctx.fillStyle = 'rgba(216, 31, 25, 0.726)';
         } else {
-            ctx.fillStyle = 'rgba(50, 65, 62, 0.527)';
+            ctx.fillStyle = 'rgba(50, 65, 62, 0.527)'
         };
+
+        /*Создаем градиент в области персонажа на основе общего количества рассчитанных кадров в игре при помощи метода
+        "graphicsHelper.createGradientBasedOnTotalCalculatedFrames()".*/
+        const gradient = graphicsHelper.createGradientBasedOnTotalCalculatedFrames(
+            ctx, game.totalCalculatedFrames, this.x, this.y, this.width, this.height
+        );
 
         /*Устанавливаем градиент как цвет линии обводки.*/
         ctx.strokeStyle = gradient;
         /*Устанавливаем ширину линии обводки.*/
         ctx.lineWidth = 4;
 
-        /*Рассчитываем X-координату и Y-координату персонажа для отрисовки с учетом интерполяции по формуле:
-        previousFrameX + (currentFrameX - previousFrameX) * interpolationFactor. Интерполяция нужна для создания 
-        промежуточных кадров, которые добавляют плавности движению.*/
-        const x = this.previousX + (this.x - this.previousX) * interpolationFactor;
-        const y = this.previousY + (this.y - this.previousY) * interpolationFactor;
-
+        /*Отрисовываем персонажа.*/
         if (game.frameInterpolation) {
+            /*Рассчитываем X-координату и Y-координату персонажа для отрисовки с учетом интерполяции по формуле:
+            previousFrameX + (currentFrameX - previousFrameX) * interpolationFactor. Интерполяция нужна для создания 
+            промежуточных кадров, которые добавляют плавности движению.*/
+            const x = this.previousX + (this.x - this.previousX) * interpolationFactor;
+            const y = this.previousY + (this.y - this.previousY) * interpolationFactor;
             /*Отрисовываем персонажа в виде прямоугольника с учетом интерполяции.*/
             ctx.fillRect(x, y, this.width, this.height);
             /*Обводим персонажа с учетом интерполяции.*/
             ctx.strokeRect(x, y, this.width, this.height);
-            /*Отрисовываем предсказанный путь, который пройдет персонаж в следующем кадре с учетом интерполяции. Это 
-            нужно только для тестирования.*/
-            // ctx.lineWidth = 1;
-            // ctx.strokeStyle = 'rgba(14, 215, 230, 1)';
-            // ctx.strokeRect(x + this.width, y, this.speed, this.height);
-            // ctx.strokeRect(x - this.speed, y, this.speed, this.height);
-            // ctx.strokeRect(x, y - this.speed, this.width, this.speed);
-            // ctx.strokeRect(x, y + this.height, this.width, this.speed);
-
-            /*Отрисовываем предсказанную позицию персонажа в следующем кадре с учетом интерполяции. Это нужно только для 
-            тестирования.*/
-            // ctx.lineWidth = 1;
-            // ctx.strokeStyle = 'rgba(255, 153, 0, 1)';
-            // ctx.strokeRect(x + this.speed, y, this.width, this.height);
-            // ctx.strokeRect(x - this.speed, y, this.width, this.height);
-            // ctx.strokeRect(x, y - this.speed, this.width, this.height);
-            // ctx.strokeRect(x, y + this.speed, this.width, this.height);
         } else {
             /*Отрисовываем персонажа в виде прямоугольника без учета интерполяции. Это нужно только для тестирования.*/
             ctx.fillRect(this.x, this.y, this.width, this.height);
             /*Обводим персонажа без учета интерполяции. Это нужно только для тестирования.*/
             ctx.strokeRect(this.x, this.y, this.width, this.height);
-            /*Отрисовываем предсказанный путь, который пройдет персонаж в следующем кадре без учета интерполяции. Это
-            нужно только для тестирования.*/
-            // ctx.lineWidth = 1;
-            // ctx.strokeStyle = 'rgba(14, 215, 230, 1)';
-            // ctx.strokeRect(this.x + this.width, this.y, this.speed, this.height);
-            // ctx.strokeRect(this.x - this.speed, this.y, this.speed, this.height);
-            // ctx.strokeRect(this.x, this.y - this.speed, this.width, this.speed);
-            // ctx.strokeRect(this.x, this.y + this.height, this.width, this.speed);
-
-            /*Отрисовываем предсказанную позицию персонажа в следующем кадре без учета интерполяции. Это нужно только 
-            для тестирования.*/
-            // ctx.lineWidth = 1;
-            // ctx.strokeStyle = 'rgba(255, 153, 0, 1)';
-            // ctx.strokeRect(this.x + this.speed, this.y, this.width, this.height);
-            // ctx.strokeRect(this.x - this.speed, this.y, this.width, this.height);
-            // ctx.strokeRect(this.x, this.y - this.speed, this.width, this.height);
-            // ctx.strokeRect(this.x, this.y + this.speed, this.width, this.height);
         };
+
+        /*Отрисовываем предсказанные позиции персонажа в следующем кадре и предсказанные пути, которые пройдет персонаж 
+        в следующем кадре. Это нужно только для тестирования.*/
+        // this.drawPredictedPositions(ctx, game.frameInterpolation, x, y);
+        // this.drawPredictedPaths(ctx, game.frameInterpolation, x, y);
     };
 };

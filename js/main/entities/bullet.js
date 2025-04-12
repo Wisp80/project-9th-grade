@@ -34,9 +34,9 @@ class Bullet {
         /*Y-координата пули.*/
         this.y = y;
         /*X-координата пули в предыдущем кадре.*/
-        this.previousX;
+        this.previousX = 0;
         /*Y-координата пули в предыдущем кадре.*/
-        this.previousY;
+        this.previousY = 0;
         /*Радиус пули.*/
         this.radius = radius;
         /*Цвет обводки пули.*/
@@ -61,7 +61,7 @@ class Bullet {
         if (currentSpeedX < 0 && currentSpeedY === 0) { this.direction = 'west' };
         if (currentSpeedX < 0 && currentSpeedY < 0) { this.direction = 'north-west' };
 
-        /*При диагонаольном движении пули корректируем вектор скорости диагонального движения, чтобы такая скорость не
+        /*При диагональном движении пули корректируем вектор скорости диагонального движения, чтобы такая скорость не
         получалась больше установленных скоростей по оси X и по оси Y.*/
         if (
             this.direction === 'north-east' || this.direction === 'south-east' ||
@@ -116,34 +116,53 @@ class Bullet {
         this.y = nextY;
     };
 
-    /*Метод "move()" совмещает вызовы методов "moveX()" и "moveY()", дополнительно обрабатывая взаимодействие пули со
-    сторонами холста, камнями, врагами и персонажем.
+    /*Метод "checkCanvasCollision()" обрабатывает коллизию пули с холстом.
     
-    Метод "move()" принимает следующие параметры:
+    Метод "checkCanvasCollision()" принимает следующие параметры:
     1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
-    2. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
 
-    Метод "move()" ничего не возвращает.*/
-    move(canvasData, game) {
-        this.moveX();
-        this.moveY();
-
+    Метод "checkCanvasCollision()" возвращает:
+    1. true, как знак того, что у пули была коллизия с холстом.
+    2. false, как знак того, что у пули не было коллизии с холстом.*/
+    checkCanvasCollision(canvasData) {
         /*Если пуля уходит за пределы холста, то удаляем ее.*/
         if (this.x < 0 || this.x > canvasData.canvasWidth || this.y < 0 || this.y > canvasData.canvasHeight) {
             this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
             this.bullets.splice(this.bullets.indexOf(this), 1);
-            return;
+            return true;
         };
 
+        return false;
+    };
+
+    /*Метод "checkRocksCollision()" обрабатывает коллизию пули с камнями.
+    Метод "checkRocksCollision()" не принимает никаких параметров.
+
+    Метод "checkRocksCollision()" возвращает:
+    1. true, как знак того, что у пули была коллизия с камнями.
+    2. false, как знак того, что у пули не было коллизии с камнями.*/
+    checkRocksCollision() {
         /*Перебираем все камни и проверяем не пересекается ли пуля с одним из них. Если это так, то удаляем пулю.*/
         for (let i = 0; i < this.rocks.length; i++) {
             if (mathHelper.isPointInsidePolygon({ x: this.x, y: this.y }, this.rocks[i].vertices)) {
                 this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
                 this.bullets.splice(this.bullets.indexOf(this), 1);
-                return;
+                return true;
             };
         };
 
+        return false;
+    };
+
+    /*Метод "checkEnemiesCollision()" обрабатывает коллизию пули с врагами.  
+
+    Метод "checkEnemiesCollision()" принимает следующие параметры:
+    1. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+
+    Метод "checkEnemiesCollision()" возвращает:
+    1. true, как знак того, что у пули была коллизия с врагами.
+    2. false, как знак того, что у пули не было коллизии с врагами.*/
+    checkEnemiesCollision(game) {
         /*Если владелец пули персонаж, то перебираем врагов и проверяем не пересекается ли пуля с одним из них. Если это
         так, то удаляем врага и пулю.*/
         if (this.owner === 'player') {
@@ -156,11 +175,23 @@ class Bullet {
                     this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
                     this.bullets.splice(this.bullets.indexOf(this), 1);
                     game.currentKilledEnemiesCount++;
-                    return;
+                    return true;
                 };
             };
         };
 
+        return false;
+    };
+
+    /*Метод "checkPlayerCollision()" обрабатывает коллизию пули с персонажем.  
+
+    Метод "checkPlayerCollision()" принимает следующие параметры:
+    1. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+
+    Метод "checkPlayerCollision()" возвращает:
+    1. true, как знак того, что у пули была коллизия с персонажем.
+    2. false, как знак того, что у пули не было коллизии с персонажем.*/
+    checkPlayerCollision(game) {
         /*Если владелец пули враг, то проверяем не пересекается ли пуля с персонажем. Если это так и персонаж не получал
         урона недавно, то уменьшаем очки здоровья у персонажа и удаляем пулю.*/
         if (
@@ -178,8 +209,37 @@ class Bullet {
 
             this.bulletIDs.splice(this.bulletIDs.indexOf(this.ID), 1);
             this.bullets.splice(this.bullets.indexOf(this), 1);
-            return;
+            return true;
         };
+
+        return false;
+    };
+
+    /*Метод "move()" совмещает вызовы методов "moveX()", "moveY()", "checkCanvasCollision()", "checkEnemiesCollision()" 
+    и "checkPlayerCollision()".
+    
+    Метод "move()" принимает следующие параметры:
+    1. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+    2. "game" - это параметр в виде объекта, обрабатывающего все данные игры.
+
+    Метод "move()" ничего не возвращает.*/
+    move(canvasData, game) {
+        this.moveX();
+        this.moveY();
+        /*Создаем переменную "isCollided" для хранения флага, указывающего была ли у пули коллизия с холстом, камнями,
+        врагами или персонажем.*/
+        let isCollided = false;
+        /*Проверяем не было ли у пули коллизии с холстом при помощи метода "checkCanvasCollision()".*/
+        isCollided = this.checkCanvasCollision(canvasData);
+        /*Если коллизий у пули еще не было, то проверяем не было ли у пули коллизии с камнями при помощи метода 
+        "checkRocksCollision()".*/
+        if (isCollided) { return } else { isCollided = this.checkRocksCollision() };
+        /*Если коллизий у пули еще не было, то проверяем не было ли у пули коллизии с врагами при помощи метода 
+        "checkEnemiesCollision()".*/
+        if (isCollided) { return } else { isCollided = this.checkEnemiesCollision(game) };
+        /*Если коллизий у пули еще не было, то проверяем не было ли у пули коллизии с персонажем при помощи метода 
+        "checkPlayerCollision()".*/
+        if (isCollided) { return } else { this.checkPlayerCollision(game) };
     };
 
     /*Метод "draw()" отрисовывает пулю.
