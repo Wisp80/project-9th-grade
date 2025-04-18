@@ -6,7 +6,7 @@ export const playerOneDefaultSettings = {
     playerOneY: 400,
     playerOneWidth: 50,
     playerOneHeight: 50,
-    playerOneSpeed: 10,
+    playerOneSpeed: 11,
     playerOneSlowDebuffMultiplier: 0.3,
     playerOneMaxHealthPoints: 3,
     playerOneTakeDamageDelay: 50,

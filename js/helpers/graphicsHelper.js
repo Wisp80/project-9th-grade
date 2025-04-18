@@ -38,11 +38,11 @@ export const graphicsHelper = {
 
             /*Отрисовываем вершины многоугольника. Это нужно только для тестирования.*/
             // ctx.lineWidth = 3;
-            // ctx.strokeStyle = 'lime';
+            // ctx.strokeStyle = 'rgba(0, 255, 64, 1)';
             // ctx.strokeRect(vertices[i].x, vertices[i].y, canvasData.cellWidth / 5, canvasData.cellHeight / 5);
 
             /*Отрисовываем номера вершин многоугольника. Это нужно только для тестирования.*/
-            // ctx.fillStyle = 'black';
+            // ctx.fillStyle = 'rgba(0, 0, 0, 1)';
             // ctx.font = '30px serif';
             // ctx.fillText(i + 1, vertices[i].x + 5, vertices[i].y - 5);
         };
@@ -78,11 +78,13 @@ export const graphicsHelper = {
     Метод "drawGrid()" принимает следующие параметры:
     1. "ctx" - это параметр в виде объекта, содержащего данные о 2D контексте холста.
     2. "canvasData" - это параметр в виде объекта, содержащего данные о холсте.
+    3. "lineWidth" - это числовой параметр, указывающий ширину линий сетки.
+    4. "strokeStyle" - это строковой параметр, указывающий цвет линий сетки.
 
     Метод "drawGrid()" ничего не возвращает.*/
-    drawGrid: function (ctx, canvasData) {
-        ctx.lineWidth = 0.05;
-        ctx.strokeStyle = 'black';
+    drawGrid: function (ctx, canvasData, lineWidth, strokeStyle) {
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = strokeStyle;
 
         for (let i = 0; i < canvasData.canvasWidth; i += canvasData.cellWidth) {
             for (let j = 0; j < canvasData.canvasHeight; j += canvasData.cellHeight) {
@@ -165,7 +167,7 @@ export const graphicsHelper = {
             [119, 119, 119, 0.5], то есть серый цвет. 
             
             Метод "some()" проверяет, удовлетворяет ли хотя бы один элемент массива заданному условию.*/
-            if (parts.length !== 4 || parts.some(part => part === "")) { return defaultRGBAComponents };
+            if (parts.length !== 4 || parts.some(part => part === '')) { return defaultRGBAComponents };
 
             /*Используем регулярное выражение, чтобы проверить, что в Alpha-канале, то есть в 4-м элементе массива 
             "parts", нет более одной точки:
@@ -195,7 +197,7 @@ export const graphicsHelper = {
                 return defaultRGBAComponents;
             };
 
-            /*Создаем массив на основе массива "parts" при помощи метода "map()", переводя каждый элемента массива 
+            /*Создаем массив на основе массива "parts" при помощи метода "map()", переводя каждый элемент массива 
             "parts" в число.*/
             const components = parts.map(Number);
 
@@ -251,6 +253,7 @@ export const graphicsHelper = {
         for (let i = 0; i < gradientSteps; i++) {
             /*Рассчитываем позицию цвета в последовательности. Это значение всегда будет от 0 до 1, например, для 7
             шагов будут следующие позиции:
+
             0 / (7 - 1) = 0 / 6 = 0
             1 / (7 - 1) = 1 / 6 
             2 / (7 - 1) = 2 / 6
@@ -262,6 +265,7 @@ export const graphicsHelper = {
 
             /*Рассчитываем коэффициент затемнения цвета в последовательности. Это значение всегда будет от 1 до 
             1 - darkeningStep, например, для 7 шагов с силой затемнения 0.7 будут следующие значения:
+
             1 - 0 * 0.7 = 1 - 0 = 1
             1 - 1/6 * 0.7 = 1 - 0.116666... ≈ 0.8833
             1 - 2/6 * 0.7 = 1 - 1/3 * 0.7 ≈ 1 - 0.2333 ≈ 0.7667
@@ -363,10 +367,10 @@ export const graphicsHelper = {
             (_, i) => 1 - (i / (gradientSteps - 1)) * lastLayerFactor
         );
 
-        /*Отрисовываем слои внутри камня указанное в параметре "gradientSteps" раз. Каждый проход цикла создает один 
-        слой камня, который немного меньше предыдущего.*/
+        /*Отрисовываем слои внутри многоугольника указанное количество раз в параметре "gradientSteps". Каждый проход 
+        цикла создает один слой многоугольника, который немного меньше предыдущего.*/
         for (let i = 0; i < gradientSteps; i++) {
-            /*Создаем масштабированные вершины для слоя камня. Формула этого масштабирования в общем виде: 
+            /*Создаем масштабированные вершины для слоя многоугольника. Формула этого масштабирования в общем виде: 
             scaled = center + (original − center) * scale.*/
             const scaledVertices = vertices.map(
                 vertice => (
@@ -390,11 +394,11 @@ export const graphicsHelper = {
             /*Замыкаем контур, то есть соединяем последнюю вершину с первой.*/
             path.closePath();
 
-            /*Заливаем слой камня.*/
+            /*Заливаем слой многоугольника.*/
             ctx.fillStyle = colors[i];
             ctx.fill(path);
 
-            /*Обводим первый слой камня.*/
+            /*Обводим первый слой многоугольника.*/
             if (i === 0) {
                 ctx.strokeStyle = strokeStyle;
                 ctx.lineWidth = lineWidth;

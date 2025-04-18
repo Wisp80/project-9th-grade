@@ -1,47 +1,23 @@
 'use strict';
 import { mathHelper } from './mathHelper.js';
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 2, y: 5 }, { x: 6, y: 2 }, { x: 3, y: 1 }, { x: 4, y: 5 }
-// )); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 2, y: 4 }, { x: 5, y: 1 }, { x: 4, y: 2 }, { x: 5, y: 4 }
-// )); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 6, y: 2 }, { x: 3, y: 1 }, { x: 4, y: 5 })); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 4 }, { x: 5, y: 1 }, { x: 4, y: 2 }, { x: 5, y: 4 })); // true
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 2, y: 5 }, { x: 5, y: 2 }, { x: 3, y: 1 }, { x: 4, y: 3 }
-// )); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 2, y: 5 }, { x: 4, y: 2 }, { x: 3, y: 1 }, { x: 7, y: 5 }
-// )); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 5, y: 2 }, { x: 3, y: 1 }, { x: 4, y: 3 })); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 4, y: 2 }, { x: 3, y: 1 }, { x: 7, y: 5 })); // true
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 4, y: 5 }, { x: 7, y: 2 }, { x: 1, y: 2 }, { x: 5, y: 6 }
-// )); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 2, y: 5 }, { x: 4, y: 1 }, { x: 5, y: 3 }, { x: 6, y: 5 }
-// )); // false
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 4, y: 5 }, { x: 7, y: 2 }, { x: 1, y: 2 }, { x: 5, y: 6 })); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 4, y: 1 }, { x: 5, y: 3 }, { x: 6, y: 5 })); // false
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 2, y: 5 }, { x: 4, y: 1 }, { x: 5, y: 5 }, { x: 7, y: 2 }
-// )); // false
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 2, y: 2 }, { x: 4, y: 2 }, { x: 6, y: 2 }, { x: 9, y: 2 }
-// )); // false
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 5 }, { x: 4, y: 1 }, { x: 5, y: 5 }, { x: 7, y: 2 })); // false
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 2 }, { x: 4, y: 2 }, { x: 6, y: 2 }, { x: 9, y: 2 })); // false
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 3, y: 2 }, { x: 6, y: 2 }
-// )); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 1, y: 1 }, { x: 3, y: 3 }, { x: 3, y: 3 }, { x: 5, y: 5 }
-// )); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 1, y: 2 }, { x: 3, y: 2 }, { x: 3, y: 2 }, { x: 6, y: 2 })); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 1, y: 1 }, { x: 3, y: 3 }, { x: 3, y: 3 }, { x: 5, y: 5 })); // true
 
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 2, y: 1 }, { x: 4, y: 3 }, { x: 4, y: 3 }, { x: 7, y: 3 }
-// )); // true
-// console.log(mathHelper.doTwoLineSegmentsIntersect(
-//     { x: 2, y: 1 }, { x: 4, y: 4 }, { x: 4, y: 4 }, { x: 8, y: 2 }
-// )); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 1 }, { x: 4, y: 3 }, { x: 4, y: 3 }, { x: 7, y: 3 })); // true
+// console.log(mathHelper.doTwoLineSegmentsIntersect({ x: 2, y: 1 }, { x: 4, y: 4 }, { x: 4, y: 4 }, { x: 8, y: 2 })); // true
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 

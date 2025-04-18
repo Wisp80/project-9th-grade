@@ -127,10 +127,10 @@ class Enemy {
         let nextX = this.x + mathHelper.getRandomIntFromInterval(-1 * this.speed, this.speed);
         /*Если X-координата врага в следующем кадре получается слишком близко к правому краю холста, то корректируем 
         ее.*/
-        while (nextX + this.width > canvasData.canvasWidth - 25) { nextX--; };
+        while (nextX + this.width > canvasData.canvasWidth - canvasData.cellWidth) { nextX--; };
         /*Если X-координата врага в следующем кадре получается слишком близко к левому краю холста, то корректируем 
         ее.*/
-        while (nextX < 25) { nextX++ };
+        while (nextX < canvasData.cellWidth) { nextX++ };
         /*Указываем, что X-координата врага в следующем кадре равна полностью откорректированной X-координате врага в 
         следующем кадре.*/
         this.x = nextX;
@@ -148,10 +148,10 @@ class Enemy {
         let nextY = this.y + mathHelper.getRandomIntFromInterval(-1 * this.speed, this.speed);
         /*Если Y-координата врага в следующем кадре получается слишком близко к нижнему краю холста, то корректируем 
         ее.*/
-        while (nextY + this.height > canvasData.canvasHeight - 25) { nextY--; };
+        while (nextY + this.height > canvasData.canvasHeight - canvasData.cellHeight) { nextY--; };
         /*Если Y-координата врага в следующем кадре получается слишком близко к верхнему краю холста, то корректируем 
         ее.*/
-        while (nextY < 25) { nextY++ };
+        while (nextY < canvasData.cellHeight) { nextY++ };
         /*Указываем, что Y-координата врага в следующем кадре равна полностью откорректированной Y-координате врага в 
         следующем кадре.*/
         this.y = nextY;
@@ -300,7 +300,7 @@ class Enemy {
         /*Отрисовываем область, в рамках которой отрисовывается многоугольник, обозначающий форму врага. Это нужно 
         только для тестирования.*/
         // ctx.lineWidth = 1;
-        // ctx.strokeStyle = 'red';
+        // ctx.strokeStyle = 'rgb(255, 0, 0)a(0, 0, 0, 1)';
         // ctx.strokeRect(this.x, this.y, this.width, this.height);
 
         /*Создаем массив цветов, допустимых для врага, и сохраняем его в переменной "colors".*/

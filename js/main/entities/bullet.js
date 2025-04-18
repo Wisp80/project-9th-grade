@@ -61,17 +61,16 @@ class Bullet {
         if (currentSpeedX < 0 && currentSpeedY === 0) { this.direction = 'west' };
         if (currentSpeedX < 0 && currentSpeedY < 0) { this.direction = 'north-west' };
 
-        /*При диагональном движении пули корректируем вектор скорости диагонального движения, чтобы такая скорость не
-        получалась больше установленных скоростей по оси X и по оси Y.*/
+        /*При диагональном движении пули корректируем вектор скорости диагонального движения при помощи метода 
+        "mathHelper.correctDiagonalMovementSpeed()", чтобы такая скорость не получалась больше установленных скоростей 
+        по оси X и по оси Y.*/
         if (
             this.direction === 'north-east' || this.direction === 'south-east' ||
             this.direction === 'south-west' || this.direction === 'north-west'
         ) {
-            const length = Math.sqrt(currentSpeedX * currentSpeedX + currentSpeedY * currentSpeedY);
-            const normalizedCurrentSpeedX = currentSpeedX / length;
-            const normalizedCurrentSpeedY = currentSpeedY / length;
-            this.currentSpeedX = normalizedCurrentSpeedX * Math.abs(currentSpeedX);
-            this.currentSpeedY = normalizedCurrentSpeedY * Math.abs(currentSpeedY);
+            const correctSpeeds = mathHelper.correctDiagonalMovementSpeed(currentSpeedX, currentSpeedY);
+            this.currentSpeedX = correctSpeeds.correcCurrentSpeedX;
+            this.currentSpeedY = correctSpeeds.correcCurrentSpeedY;
         };
 
         /*Объект, содержащий объекты, содержащие данные о персонажах.*/

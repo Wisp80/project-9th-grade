@@ -129,68 +129,18 @@ export class Player {
         if (controls.isWKeyDown) { this.currentSpeedY = -1 * currentSpeed };
 
         /*В зависимости от нажатых диагональных комбинаций двух кнопок "WASD" устанавливаем текущие скорости по оси X и 
-        по оси Y.*/
-        if (controls.isWKeyDown && controls.isDKeyDown) {
-            /*Когда объект движется по диагонали, его скорость должна быть распределена между X-направлением и 
-            Y-направлением. Если просто установить одинаковую скорость по обеим осям, то фактическая скорость объекта 
-            будет больше, чем задумано. Например, если скорость по оси X равна 5 и скорость по оси Y равна 5, то 
-            скорость при диагональном движении по теореме Пифагора будет равна sqrt(5 * 5 + 5 * 5) ≈ 7.07.
-            
-            Чтобы решить эту проблему, нужно сделать следующее:
-            1. Найти текущую (неправильную) величину скорости при диагональном движении путем нахождения длины исходного
-            вектора скорости при диагональном движении.
-            2. Произвести нормализацию исходного вектора скорости при диагональном движении путем деления длин его
-            каждой компоненты на длину исходного вектора скорости при диагональном движении.
-            3. Компоненты нормализованного исходного вектора скорости при диагональном движении умножить на ожидаемую
-            скорость, чтобы получить компоненты правильного вектора скорости при диагональном движении.
-
-            Чтобы найти текущую (неправильную) величину скорости при диагональном движении нужно найти длину исходного 
-            вектора скорости при диагональном движении. Если построить прямоугольный треугольник, где катеты будут равны
-            текущим скоростям по оси X и по оси Y, то длина гипотенузы, найденная по теореме Пифагора, в этом 
-            треугольнике будет равна длине исходного вектора скорости при диагональном движении. Здесь нужно понимать, 
-            что при помощи этой гипотенузы можно найти только длину исходного вектора скорости при диагональном 
-            движении, но не направление этого вектора.
-
-            Нормализация вектора - это процесс приведения вектора к единичной длине, сохраняя его направление. 
-            Нормализованный вектор можно умножить на какое-то число, чтобы указать "на сколько сильно двигаться" в
-            каком-то направлении. Чтобы произвести нормализацию исходного вектора скорости при диагональном движении,
-            нужно длины его компонент поделить на длину исходного вектора скорости при диагональном движении. Компоненты
-            вектора это проекции этого вектора на оси координат, то есть в нашем случае это вектора текущих скоростей по 
-            оси X и по оси Y.
-            
-            Чтобы получить компоненты правильного вектора скорости при диагональном движении, нужно компоненты 
-            нормализованного исходного вектора скорости при диагональном движении умножить на ожидаемую скорость.*/
-
-            /*Вычисляем длину исходного вектора скорости при диагональном движении.*/
-            const length = Math.sqrt(currentSpeed * currentSpeed + currentSpeed * currentSpeed);
-            /*Нормализуем исходный вектор скорости при диагональном движении.*/
-            const normalizedCurrentSpeedX = currentSpeed / length;
-            const normalizedCurrentSpeedY = currentSpeed / length;
-            /*Вычисляем компоненты правильного вектора скорости при диагональном движении.*/
-            this.currentSpeedX = 1 * normalizedCurrentSpeedX * currentSpeed;
-            this.currentSpeedY = -1 * normalizedCurrentSpeedY * currentSpeed;
+        по оси Y. Если необходимо, то корректируем скорость при диагональном движении при помощи метода 
+        "mathHelper.correctDiagonalMovementSpeed()".*/
+        if (
+            controls.isWKeyDown && controls.isDKeyDown ||
+            controls.isDKeyDown && controls.isSKeyDown ||
+            controls.isSKeyDown && controls.isAKeyDown ||
+            controls.isAKeyDown && controls.isWKeyDown
+        ) {
+            const correctSpeeds = mathHelper.correctDiagonalMovementSpeed(this.currentSpeedX, this.currentSpeedY);
+            this.currentSpeedX = correctSpeeds.correcCurrentSpeedX;
+            this.currentSpeedY = correctSpeeds.correcCurrentSpeedY;
         };
-
-        /*Создаем вспомогательную локальную функцию "correctDiagonalMovementSpeed()", которая корректирует скорость 
-        персонажа при диагональном движении.
-        
-        Функция "correctDiagonalMovementSpeed()" принимает следующие параметры:
-        1. "currentSpeed" - это числовой параметр, указывающий текущую скорость передвижения персонажа.
-        2. "xDirection" - это числовой параметр, указывающий направление персонажа по оси X (1 - влево, -1 вправо).
-        3. "yDirection" - это числовой параметр, указывающий направление персонажа по оси Y (1 - вниз, -1 вверх).
-
-        Функция "correctDiagonalMovementSpeed()" ничего не возвращает.*/
-        const correctDiagonalMovementSpeed = (currentSpeed, xDirection, yDirection) => {
-            const length = Math.sqrt(currentSpeed * currentSpeed + currentSpeed * currentSpeed);
-            const normalizedCurrentSpeedX = currentSpeed / length;
-            const normalizedCurrentSpeedY = currentSpeed / length;
-            this.currentSpeedX = xDirection * normalizedCurrentSpeedX * currentSpeed;
-            this.currentSpeedY = yDirection * normalizedCurrentSpeedY * currentSpeed;
-        };
-
-        if (controls.isDKeyDown && controls.isSKeyDown) { correctDiagonalMovementSpeed(currentSpeed, 1, 1) };
-        if (controls.isSKeyDown && controls.isAKeyDown) { correctDiagonalMovementSpeed(currentSpeed, -1, 1) };
-        if (controls.isAKeyDown && controls.isWKeyDown) { correctDiagonalMovementSpeed(currentSpeed, -1, -1) };
 
         /*Зануляем текущую скорость по оси X, если одновременно нажаты или отжаты кнопки "D" и "A".*/
         if ((controls.isDKeyDown && controls.isAKeyDown) || (!controls.isAKeyDown && !controls.isDKeyDown)) {
@@ -767,7 +717,7 @@ export class Player {
         const gradient = graphicsHelper.createGradientBasedOnTotalCalculatedFrames(
             ctx, game.totalCalculatedFrames, this.x, this.y, this.width, this.height
         );
-
+        
         /*Устанавливаем градиент как цвет линии обводки.*/
         ctx.strokeStyle = gradient;
         /*Устанавливаем ширину линии обводки.*/
