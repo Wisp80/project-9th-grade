@@ -69,8 +69,8 @@ class Bullet {
             this.direction === 'south-west' || this.direction === 'north-west'
         ) {
             const correctSpeeds = mathHelper.correctDiagonalMovementSpeed(currentSpeedX, currentSpeedY);
-            this.currentSpeedX = correctSpeeds.correcCurrentSpeedX;
-            this.currentSpeedY = correctSpeeds.correcCurrentSpeedY;
+            this.currentSpeedX = correctSpeeds.correctCurrentSpeedX;
+            this.currentSpeedY = correctSpeeds.correctCurrentSpeedY;
         };
 
         /*Объект, содержащий объекты, содержащие данные о персонажах.*/

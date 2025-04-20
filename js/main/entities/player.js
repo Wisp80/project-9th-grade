@@ -138,8 +138,8 @@ export class Player {
             controls.isAKeyDown && controls.isWKeyDown
         ) {
             const correctSpeeds = mathHelper.correctDiagonalMovementSpeed(this.currentSpeedX, this.currentSpeedY);
-            this.currentSpeedX = correctSpeeds.correcCurrentSpeedX;
-            this.currentSpeedY = correctSpeeds.correcCurrentSpeedY;
+            this.currentSpeedX = correctSpeeds.correctCurrentSpeedX;
+            this.currentSpeedY = correctSpeeds.correctCurrentSpeedY;
         };
 
         /*Зануляем текущую скорость по оси X, если одновременно нажаты или отжаты кнопки "D" и "A".*/
