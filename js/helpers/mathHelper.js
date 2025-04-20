@@ -1318,9 +1318,9 @@ export const mathHelper = {
         const normalizedCurrentSpeedX = currentSpeedX / length;
         const normalizedCurrentSpeedY = currentSpeedY / length;
         /*Вычисляем компоненты корректного вектора скорости при диагональном движении.*/
-        const correcCurrentSpeedX = normalizedCurrentSpeedX * Math.abs(currentSpeedX);
-        const correcCurrentSpeedY = normalizedCurrentSpeedY * Math.abs(currentSpeedY);
+        const correctCurrentSpeedX = normalizedCurrentSpeedX * Math.abs(currentSpeedX);
+        const correctCurrentSpeedY = normalizedCurrentSpeedY * Math.abs(currentSpeedY);
         /*Возвращаем объект, содержащий компоненты корректного вектора скорости при диагональном движении.*/
-        return { correcCurrentSpeedX, correcCurrentSpeedY };
+        return { correctCurrentSpeedX, correctCurrentSpeedY };
     }
 };
